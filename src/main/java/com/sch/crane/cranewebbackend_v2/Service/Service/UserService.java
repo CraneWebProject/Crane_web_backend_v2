@@ -1,5 +1,6 @@
 package com.sch.crane.cranewebbackend_v2.Service.Service;
 
+import com.sch.crane.cranewebbackend_v2.Data.DTO.User.EditMemberDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.JoinDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.LoginDto;
 import com.sch.crane.cranewebbackend_v2.Data.Repository.User.UserRepository;
@@ -15,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.swing.text.html.Option;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -29,7 +32,6 @@ public class UserService {
     @Transactional
     public User join(JoinDto joinDto){
 
-
         User user = User.builder()
                 .userEmail(joinDto.getUserEmail())
                 .userPassword(passwordEncoder.encode(joinDto.getUserPassword()))
@@ -42,6 +44,7 @@ public class UserService {
                 .build();
         return userRepository.save(user);
     }
+
     @Transactional
     public User login(LoginDto loginDto){
         User user = userRepository.findByUserEmail(loginDto.getUserEmail()).orElseThrow(
@@ -52,4 +55,34 @@ public class UserService {
         return user;
     }
 
+    @Transactional
+    public Long editUser(String userEmail, EditMemberDto editMemberDto){
+        User user = userRepository.findByUserEmail(userEmail).orElseThrow(
+                () -> new UserNameNotFoundException());
+
+        user.updateUser(editMemberDto.getUserDept(), editMemberDto.getUserPhNum());
+
+        return userRepository.save(user).getUid();
+    }
+
+    @Transactional
+    public Long editPassword(String userEmail, EditMemberDto editMemberDto){
+        User user = userRepository.findByUserEmail(userEmail).orElseThrow(
+                () -> new UserNameNotFoundException());
+        user.updateUserPassword(editMemberDto.getUserPassword());
+
+        return userRepository.save(user).getUid();
+
+    }
+
+    @Transactional
+    public void delUser(Long uId)
+    {
+        Optional<User> optionalUser = userRepository.findById(uId);
+        if(optionalUser.isEmpty())
+        {
+            throw new NoSuchElementException("유저가 존재하지 않습니다.");
+        }
+        userRepository.deleteById(uId);
+    }
 }

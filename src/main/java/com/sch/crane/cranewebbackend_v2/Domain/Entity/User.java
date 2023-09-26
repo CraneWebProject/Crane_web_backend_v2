@@ -40,6 +40,15 @@ public class User implements UserDetails {
     private  UserRole userRole;
 
 
+    public void updateUser(String userDept, String userPhNum){
+        this.userDept = userDept;
+        this.userPhNum = userPhNum;
+    }
+
+    public void updateUserPassword(String userPassword){
+        this.userPassword = userPassword;
+    }
+
     @Builder
     public User(Long uid,String userEmail,String userPassword,String userName,String userDept,String userStdId,
                 String userPhNum,LocalDateTime userBirth,UserSession userSession, UserRole userRole) {
