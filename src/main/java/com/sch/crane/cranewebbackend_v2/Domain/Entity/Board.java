@@ -19,13 +19,11 @@ public class Board extends BaseTimeEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bid;
 
-    private Long boardNum;
-
     private String boardTitle;
 
     private String boardContents;
 
-    private LocalDateTime boardCreatedTime;
+    private Integer boardView;
 
     private BoardCategory boardCategory;
 
@@ -36,18 +34,16 @@ public class Board extends BaseTimeEntity {
     private User user;
 
     @Builder
-    private Board(Long bid, Long boardNum, String boardTitle, String boardContents,LocalDateTime boardCreatedTime,
+    private Board(Long bid,Integer boardView, String boardTitle, String boardContents,
                   BoardCategory boardCategory,BoardState boardState, User user){
 
         this.bid = bid;
 
-        this.boardNum = boardNum;
+        this.boardView = boardView;
 
         this.boardTitle = boardTitle;
 
         this.boardContents = boardContents;
-
-        this.boardCreatedTime = boardCreatedTime;
 
         this.boardCategory = boardCategory;
 

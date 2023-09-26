@@ -1,0 +1,35 @@
+<User>
+
+LoginDto
+JoinDto
+EditMemberDto
+FindByPassword = EditPassWord -> FindByPassWordDto
+
+<Board>
+
+BoardResponseDto
+BoardRequestDto
+
+
+<Comment>
+CommentResponseDto
+CommentRequestDto
+
+<Team>
+TeamRequestDto
+TeamMatchRequestDto // team fk + uid => team match
+TeamResponseDto //team + team member
+
+<Reservation>
+ReservationRequestDto
+ReservationResponseDto
+
+
+<AttachmentFile>
+AttachmentFileResponseDto
+
+
+
+
+
+
