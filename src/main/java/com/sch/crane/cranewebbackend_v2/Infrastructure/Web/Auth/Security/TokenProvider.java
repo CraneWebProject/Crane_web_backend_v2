@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,7 +50,9 @@ public class TokenProvider {
 
     @PostConstruct
     protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+//        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+        byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
 
@@ -66,17 +69,34 @@ public class TokenProvider {
     public String createToken(String userEmail,List<String> roles,Long TOKEN_TIME) {
 
         Claims claims = Jwts.claims().setSubject(userEmail);
-        Date date = new Date();
+        Date now = new Date();
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setClaims(claims)
                         .claim(AUTHORIZATION_KEY,roles)
                         .setSubject(userEmail)
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME))
+                        .setIssuedAt(now)
+                        .setExpiration(new Date(now.getTime() + TOKEN_TIME))
+                        .signWith(key, signatureAlgorithm)
+                        .compact();
+    }
+
+    public String createRefreshToken(String userEmail, List<String> roles){
+        Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
+        Claims claims = Jwts.claims().setSubject(userEmail );
+        Date date = new Date();
+
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .setClaims(claims)
+                        .claim(AUTHORIZATION_KEY, roles)
+                        .setSubject(userEmail)
+                        .setExpiration(new Date(date.getTime()  + RefreshExpireTimeMs ))
                         .setIssuedAt(date)
                         .signWith(key, signatureAlgorithm)
                         .compact();
+
     }
 
     public TokenResponse refreshToken(String refreshToken) {

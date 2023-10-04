@@ -45,14 +45,20 @@ public class UserService {
         return userRepository.save(user);
     }
 
+//    @Transactional
+//    public User login(LoginDto loginDto){
+//        User user = userRepository.findByUserEmail(loginDto.getUserEmail()).orElseThrow(
+//                () -> new IllegalArgumentException("아이디가 일치 하지 않습니다"));
+//        if(!passwordEncoder.matches(loginDto.getUserPassword(),user.getPassword())){
+//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
+//        }
+//        return user;
+//
+//    }
+
     @Transactional
-    public User login(LoginDto loginDto){
-        User user = userRepository.findByUserEmail(loginDto.getUserEmail()).orElseThrow(
-                () -> new IllegalArgumentException("아이디가 일치 하지 않습니다"));
-        if(!passwordEncoder.matches(loginDto.getUserPassword(),user.getPassword())){
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
-        }
-        return user;
+    public Optional<User> findUserByEmail(String email){
+        return userRepository.findByUserEmail(email);
     }
 
     @Transactional

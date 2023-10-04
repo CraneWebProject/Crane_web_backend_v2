@@ -8,6 +8,7 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +23,7 @@ public class User implements UserDetails {
 
     private String userEmail;
 
+    @JsonIgnore
     private String userPassword;
 
     private String userName;
@@ -32,8 +34,9 @@ public class User implements UserDetails {
 
     private String userPhNum;
 
-    private LocalDateTime userBirth;
+    private LocalDate userBirth;
 
+    @Enumerated(EnumType.STRING)
     private UserSession userSession;
 
     @Enumerated(EnumType.STRING)
@@ -51,7 +54,7 @@ public class User implements UserDetails {
 
     @Builder
     public User(Long uid,String userEmail,String userPassword,String userName,String userDept,String userStdId,
-                String userPhNum,LocalDateTime userBirth,UserSession userSession, UserRole userRole) {
+                String userPhNum,LocalDate userBirth,UserSession userSession, UserRole userRole) {
         this.uid = uid;
 
         this.userEmail = userEmail;
@@ -109,12 +112,12 @@ public class User implements UserDetails {
     @Override
     @JsonIgnore
     public String getPassword() {
-        return null;
+        return this.userPassword;
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return this.userName;
     }
 
     @Override

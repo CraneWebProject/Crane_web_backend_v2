@@ -29,10 +29,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
     private final TokenProvider tokenProvider;
     private final RedisUtil redisUtil;
-    private final UserDetailsImpl userDetails;
     private final Long expireTimeMs = 300000l;
     private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
 
