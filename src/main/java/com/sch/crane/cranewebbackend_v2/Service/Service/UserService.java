@@ -62,6 +62,14 @@ public class UserService {
     }
 
     @Transactional
+    public boolean isEmailExist(String email){
+        if(findUserByEmail(email).isPresent())
+            return true;
+        else
+            return false;
+    }
+
+    @Transactional
     public Long editUser(String userEmail, EditMemberDto editMemberDto){
         User user = userRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new UserNameNotFoundException());

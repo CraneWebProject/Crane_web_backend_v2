@@ -21,11 +21,14 @@ public class User implements UserDetails {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long uid;
 
+    @Column(unique = true, nullable = false)
     private String userEmail;
 
+    @Column(nullable = false)
     @JsonIgnore
     private String userPassword;
 
+    @Column(nullable = false)
     private String userName;
 
     private String userDept;
