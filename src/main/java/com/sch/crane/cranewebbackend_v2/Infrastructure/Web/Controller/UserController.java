@@ -14,12 +14,10 @@ import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.Sta
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.metrics.Stat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -29,10 +27,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
-    private UserService userService;
+    private final UserService userService;
     private final TokenProvider tokenProvider;
     private final RedisUtil redisUtil;
-    private final UserDetailsImpl userDetails;
     private final Long expireTimeMs = 300000l;
     private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
 
@@ -47,6 +44,25 @@ public class UserController {
                 .data(user)
                 .build();
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/emailcheck")
+    public ResponseEntity<JoinResponse> emailCheck(@RequestBody JoinDto joinDto){
+        JoinResponse response;
+        if(userService.isEmailExist(joinDto.getUserEmail())){ //동일한 이메일이 존재하면
+            response = JoinResponse.builder()
+                    .code(StatusCode.DATA_CONFLICT)
+                    .message(ResponseMessage.EMAIL_EXISTED)
+                    .data(false)
+                    .build();
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        response = JoinResponse.builder()
+                .code(StatusCode.OK)
+                .message(ResponseMessage.EMAIL_OK)
+                .data(true)
+                .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 

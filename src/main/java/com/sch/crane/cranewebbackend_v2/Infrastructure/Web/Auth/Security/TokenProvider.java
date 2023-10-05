@@ -25,6 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class TokenProvider {
     private final RedisUtil redisUtil;
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_KEY = "auth";
-    private static final String BEARER_PREFIX = "Bearer ";
+//    private static final String BEARER_PREFIX = "Bearer ";
     private static final long TOKEN_TIME = 60 * 60 * 24 * 1000L;
 
 
@@ -49,35 +50,52 @@ public class TokenProvider {
 
     @PostConstruct
     protected void init() {
-        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+//        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+        byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
+        key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
 
     public String resolveToken(HttpServletRequest request) {
 
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.substring(7);
-        }
-
-        return null;
+//        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+//
+//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+//            return bearerToken.substring(8);
+//        }
+        return request.getHeader(AUTHORIZATION_HEADER);
     }
     public String createToken(String userEmail,List<String> roles,Long TOKEN_TIME) {
 
         Claims claims = Jwts.claims().setSubject(userEmail);
-        Date date = new Date();
+        Date now = new Date();
 
-        return BEARER_PREFIX +
+        return
                 Jwts.builder()
                         .setClaims(claims)
                         .claim(AUTHORIZATION_KEY,roles)
                         .setSubject(userEmail)
-                        .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-                        .setIssuedAt(date)
+                        .setIssuedAt(now)
+                        .setExpiration(new Date(now.getTime() + TOKEN_TIME))
                         .signWith(key, signatureAlgorithm)
                         .compact();
     }
+
+//    public String createRefreshToken(String userEmail, List<String> roles){
+//        Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
+//        Claims claims = Jwts.claims().setSubject(userEmail );
+//        Date date = new Date();
+//
+//        return  Jwts.builder()
+//                        .setClaims(claims)
+//                        .claim(AUTHORIZATION_KEY, roles)
+//                        .setSubject(userEmail)
+//                        .setExpiration(new Date(date.getTime()  + RefreshExpireTimeMs ))
+//                        .setIssuedAt(date)
+//                        .signWith(key, signatureAlgorithm)
+//                        .compact();
+//
+//    }
 
     public TokenResponse refreshToken(String refreshToken) {
         Long tokenValidTime = 1000 * 60 * 60l;

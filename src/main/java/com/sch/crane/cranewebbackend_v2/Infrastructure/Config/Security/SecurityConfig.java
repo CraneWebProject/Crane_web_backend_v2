@@ -59,7 +59,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers("/api/users/signup").permitAll()
-                        .requestMatchers("/api/auth/authenticate").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/api/boards/list").permitAll()
                         .requestMatchers("/error/**").permitAll()
                         .anyRequest().authenticated()
