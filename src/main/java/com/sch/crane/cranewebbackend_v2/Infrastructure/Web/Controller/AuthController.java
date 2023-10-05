@@ -9,8 +9,11 @@ import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenPr
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.methods.HttpHead;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.beans.Encoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +35,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
-
+    public static final String AUTHORIZATION_HEADER = "Authorization";
     private final UserService userservice;
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
@@ -43,7 +47,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginDto loginDto, HttpServletResponse response){
 
         Optional<User> optionalUser = userservice.findUserByEmail(loginDto.getUserEmail());
 
@@ -83,24 +87,29 @@ public class AuthController {
         System.out.println(refreshToken);
         redisUtil.setValues(refreshToken, user.getUserEmail());
 
-        ResponseCookie responseCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .domain("crane.sch.ac.kr")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .path("/")
-                .maxAge(3600000)
-                .build();
+
+        Cookie responseCookie = new Cookie("refreshToken", refreshToken);
+        responseCookie.setMaxAge(7*24*60*60);
+        responseCookie.setHttpOnly(true);
+        responseCookie.setSecure(true);
+        responseCookie.setPath("/");
+        response.addCookie(responseCookie);
+
+        Cookie accessCookie = new Cookie("accessToken", token);
+        accessCookie.setMaxAge(5*60);
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(true);
+        accessCookie.setPath("/");
+        response.addCookie(accessCookie);
+
 
         loginResponse = LoginResponse.builder()
                 .code(StatusCode.OK)
                 .message(ResponseMessage.LOGIN_SUCCESS)
                 .build();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .header("accessToken", token)
-                .header("expireTime", String.valueOf(expireTimeEND))
-                .body(loginResponse);
+        return ResponseEntity.ok(loginResponse);
+
+
     }
 }
