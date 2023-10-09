@@ -2,23 +2,23 @@ package com.sch.crane.cranewebbackend_v2.Service.Service;
 
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.EditMemberDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.JoinDto;
-import com.sch.crane.cranewebbackend_v2.Data.DTO.User.LoginDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
 import com.sch.crane.cranewebbackend_v2.Data.Repository.User.UserRepository;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
+import com.sch.crane.cranewebbackend_v2.Domain.Enums.UserRole;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Redis.RedisUtil;
 import com.sch.crane.cranewebbackend_v2.Service.Exception.UserNameNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
+import com.sch.crane.cranewebbackend_v2.Util.RandomProvider;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.common.config.types.Password;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,9 +28,11 @@ public class UserService {
     private final RedisUtil redisUtil;
     private final RedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
+    private final RandomProvider randomProvider;
+
 
     @Transactional
-    public User join(JoinDto joinDto){
+    public UserResponseDto join(JoinDto joinDto){
 
         User user = User.builder()
                 .userEmail(joinDto.getUserEmail())
@@ -41,8 +43,17 @@ public class UserService {
                 .userPhNum(joinDto.getUserPhNum())
                 .userBirth(joinDto.getUserBirth())
                 .userSession(joinDto.getUserSession())
+                .userRole(UserRole.STAN_BY)
                 .build();
-        return userRepository.save(user);
+
+        Long uid = userRepository.save(user).getUid();
+
+        return UserResponseDto.builder()
+                .uid(uid)
+                .userName(user.getUsername())
+                .userEmail(user.getUserEmail())
+                .session(user.getUserSession())
+                .build();
     }
 
 //    @Transactional
@@ -70,33 +81,54 @@ public class UserService {
     }
 
     @Transactional
-    public Long editUser(String userEmail, EditMemberDto editMemberDto){
+    public Long updateUserInfo(String userEmail, EditMemberDto editMemberDto) throws UserNameNotFoundException {
         User user = userRepository.findByUserEmail(userEmail).orElseThrow(
                 () -> new UserNameNotFoundException());
 
-        user.updateUser(editMemberDto.getUserDept(), editMemberDto.getUserPhNum());
+        user.updateUserInfo(editMemberDto.getUserDept(), editMemberDto.getUserPhNum());
 
         return userRepository.save(user).getUid();
     }
 
     @Transactional
-    public Long editPassword(String userEmail, EditMemberDto editMemberDto){
-        User user = userRepository.findByUserEmail(userEmail).orElseThrow(
-                () -> new UserNameNotFoundException());
-        user.updateUserPassword(editMemberDto.getUserPassword());
+    public Long updateUserRole(EditMemberDto editMemberDto) throws UserNameNotFoundException {
+        User user = userRepository.findByUserEmail(editMemberDto.getUserEmail()).orElseThrow(UserNameNotFoundException::new);
+
+        user.updateUserRole(editMemberDto.getUserRole());
 
         return userRepository.save(user).getUid();
-
     }
 
     @Transactional
-    public void delUser(Long uId)
-    {
-        Optional<User> optionalUser = userRepository.findById(uId);
-        if(optionalUser.isEmpty())
-        {
-            throw new NoSuchElementException("유저가 존재하지 않습니다.");
+    public Long editPassword(String userEmail, EditMemberDto editMemberDto) throws UserNameNotFoundException, BadCredentialsException{
+        User user = userRepository.findByUserEmail(userEmail).orElseThrow(
+                () -> new UserNameNotFoundException());
+
+        //기존 비밀번호 일치 확인
+        if(!passwordEncoder.matches(editMemberDto.getUserPastPassword(), user.getPassword()) ){
+            //틀린경우
+            throw new BadCredentialsException("잘못된 비밀번호");
         }
-        userRepository.deleteById(uId);
+
+        user.updateUserPassword(editMemberDto.getUserNewPassword());
+
+        return userRepository.save(user).getUid();
+
+    }
+
+    @Transactional
+    public void delUser(String userEmail, EditMemberDto editMemberDto) {
+
+        User user = userRepository.findByUserEmail(userEmail).orElseThrow(UserNameNotFoundException::new);
+
+        //비밀번호 확인
+        if(!passwordEncoder.matches(editMemberDto.getUserPastPassword(), user.getPassword())){
+            throw new BadCredentialsException("잘못된 비밀번호");
+        }
+        String randEmail = randomProvider.RandomNumCharStringProvider(10) + "@sch.ac.kr";
+        String randRawPassword = randomProvider.RandomNumCharStringProvider(15);
+        String randPassword = passwordEncoder.encode(randRawPassword);
+
+        user.deleteUser(randEmail, randPassword);
     }
 }

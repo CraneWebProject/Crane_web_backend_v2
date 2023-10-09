@@ -9,9 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List;
 
 @Entity
 @Getter
@@ -46,13 +44,25 @@ public class User implements UserDetails {
     private  UserRole userRole;
 
 
-    public void updateUser(String userDept, String userPhNum){
+    public void updateUserInfo(String userDept, String userPhNum){
         this.userDept = userDept;
         this.userPhNum = userPhNum;
     }
 
+    public void updateUserRole(UserRole userRole){
+        this.userRole = userRole;
+    }
+
     public void updateUserPassword(String userPassword){
         this.userPassword = userPassword;
+    }
+
+    public void deleteUser(String randEmail, String randPassword ){
+        this.userEmail = randEmail;
+        this.userPassword = randPassword;
+        this.userName = "탈퇴한 사용자";
+        this.userPhNum = "01000000000";
+        this.userRole = UserRole.STAN_BY;
     }
 
     @Builder

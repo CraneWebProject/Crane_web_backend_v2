@@ -19,10 +19,11 @@ public class RedisUtil {
         return valueOperations.get(key);
     }
 
+    //TODO: redis exp 기간과 jwt exp 시간 동일하게 설정 할 것
     public void setValues(String token, String email){
         ValueOperations<String, String> values = template.opsForValue();
         values.set(token, email);
-        template.expire(token, Duration.ofMinutes(3)); // 3분 후에 만료
+        template.expire(token, Duration.ofMinutes(60 * 24 * 7)); // 1주일 후 만료
     }
 
     public boolean existData(String key){
