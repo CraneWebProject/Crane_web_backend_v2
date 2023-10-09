@@ -22,6 +22,11 @@ public class AttachmentFile {
     @ManyToOne(fetch = FetchType.LAZY)
     private Board board;
 
+    public void updateAttachmentFile(String attachTitle, String attachPath) {
+        this.attachTitle = attachTitle;
+        this.attachPath = attachPath;
+    }
+
     @Builder
     private AttachmentFile(Long aid, String attachTitle, String attachPath, Board board){
 

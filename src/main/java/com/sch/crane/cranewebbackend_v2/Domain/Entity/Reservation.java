@@ -38,6 +38,4 @@ public class Reservation extends BaseTimeEntity {
 
         this.user = user;
     }
-
-
 }
