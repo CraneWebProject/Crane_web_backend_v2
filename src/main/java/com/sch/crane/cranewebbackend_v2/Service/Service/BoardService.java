@@ -37,8 +37,7 @@ public class BoardService {
     private final AttachmentRepository attachmentRepository;
 
     @Transactional
-    public Board createBoard(BoardRequestDto boardRequestDto)
-    {
+    public Board createBoard(BoardRequestDto boardRequestDto) {
         Board board = Board.builder()
                 .boardTitle(boardRequestDto.getBoardTitle())
                 .boardCategory(boardRequestDto.getBoardCategory())
@@ -46,39 +45,44 @@ public class BoardService {
                 .build();
 
         return boardRepository.save(board);
-
-    }
+    } // userName 추가
 
     @Transactional
-    public Board editBoard(BoardResponseDto boardResponseDto, BoardRequestDto boardRequestDto)
-    {
-        Board board = boardRepository.findById(boardResponseDto.getBid()).orElseThrow(
-                () -> new NoSuchElementException());
+    public Board editBoard(Long boardId, BoardRequestDto boardRequestDto) {
+        Board board = boardRepository.findById(boardId).orElseThrow(
+                () -> new NoSuchElementException("보드가 존재하지 않습니다."));
 
-        board.updateBoard(boardRequestDto.getBoardTitle(), boardRequestDto.getBoardContents());
+        board.updateBoard(boardRequestDto.getBoardTitle(), boardRequestDto.getBoardContents(), boardRequestDto.getBoardCategory());
         return boardRepository.save(board);
     }
 
     @Transactional
-    public void delBoard(Long boardId)
-    {
+    public void delBoard(Long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 () -> new NoSuchElementException("보드가 존재하지 않습니다."));
         List<Comment> commentList = commentRepository.findByBId(boardId);
         for(Comment c : commentList)
         {
-            commentRepository.delete(c);
+            commentRepository.deleteById(c.getCid());
         }
         if(!commentList.isEmpty())
         {
             throw new EntityExistsException("댓글이 모두 삭제되지 않았습니다");
         }
         boardRepository.delete(board);
+        List<AttachmentFile> attachmentFileList = attachmentRepository.findAttachmentFileByBoardId(boardId);
+        for(AttachmentFile a : attachmentFileList)
+        {
+            attachmentRepository.deleteById(a.getAid());
+        }
+        if(!attachmentFileList.isEmpty())
+        {
+            throw new EntityExistsException("첨부파일이 존재하지 않습니다.");
+        }
     }
 
     @Transactional
-    public BoardResponseDto readBoard(Long boardId)
-    {
+    public BoardResponseDto readBoardById(Long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 ()-> new NoSuchElementException("유저가 존재하지 않습니다.")
         );
@@ -119,8 +123,7 @@ public class BoardService {
     }
 
     @Transactional
-    public List<BoardResponseDto> readBoardByUser(Long userId)
-    {
+    public List<BoardResponseDto> readBoardByUser(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(
                 ()-> new NoSuchElementException("유저가 존재하지 않습니다.")
         );
@@ -140,8 +143,7 @@ public class BoardService {
     }
 
     @Transactional
-    public Comment writeComment(Long boardId, CommentRequestDto commentRequestDto)
-    {
+    public Comment writeComment(Long boardId, CommentRequestDto commentRequestDto) {
         Board board = boardRepository.findById(boardId).orElseThrow(
             ()-> new NoSuchElementException("보드가 존재하지 않습니다."));
 
@@ -154,8 +156,7 @@ public class BoardService {
     }
 
     @Transactional
-    public Comment editComment(Long commentId, CommentRequestDto commentRequestDto)
-    {
+    public Comment editComment(Long commentId, CommentRequestDto commentRequestDto) {
        Comment comment = commentRepository.findById(commentId).orElseThrow(
                 ()-> new NoSuchElementException("코멘트가 존재하지 않습니다")
         );
@@ -165,8 +166,7 @@ public class BoardService {
     }
 
     @Transactional
-    public List<CommentResponseDto> readCommentByBoard(Long boardId)
-    {
+    public List<CommentResponseDto> readCommentByBoard(Long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 ()-> new NoSuchElementException("보드가 존재하지 않습니다")
         );
@@ -187,8 +187,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void delComment(Long commentId)
-    {
+    public void delComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 ()-> new NoSuchElementException("코멘트가 존재하지 않습니다.")
         );
@@ -196,14 +195,12 @@ public class BoardService {
     }
 
     @Transactional
-    public int increaseBoardView(Long boardId)
-    {
+    public int increaseBoardView(Long boardId) {
         return boardRepository.increaseView(boardId);
     }
 
     @Transactional
-    public AttachmentFile createAttachmentFile(Long boardId, AttachmentFileRequestDto attachmentFileRequestDto)
-    {
+    public AttachmentFile createAttachmentFile(Long boardId, AttachmentFileRequestDto attachmentFileRequestDto) {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 ()-> new NoSuchElementException("보드가 존재하지 않습니다")
         );
@@ -226,8 +223,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void deleteAttachmentFile(Long aId)
-    {
+    public void deleteAttachmentFile(Long aId) {
         AttachmentFile attachmentFile = attachmentRepository.findById(aId).orElseThrow(
                 () -> new NoSuchElementException("첨부파일이 존재하지 않습니다.")
         );
@@ -235,16 +231,15 @@ public class BoardService {
     }
 
     @Transactional
-    public void deleteAttachmentFileByBoardId(Long bId)
-    {
-        Board board = boardRepository.findById(bId).orElseThrow(
-                () -> new NoSuchElementException("보드가 존재하지 않습니다.")
+    public AttachmentFileRequestDto readAttachmentFile(Long attachmentFileId) {
+        AttachmentFile attachmentFile = attachmentRepository.findById(attachmentFileId).orElseThrow(
+                ()-> new NoSuchElementException("첨부파일이 존재하지 않습니다.")
         );
-
-        List<AttachmentFile> attachmentFileList = attachmentRepository.findAttachmentFileByBoardId(bId);
-        for(AttachmentFile a : attachmentFileList)
-        {
-            attachmentRepository.delete(a);
-        }
+        AttachmentFileRequestDto attachmentFileRequestDto= AttachmentFileRequestDto.builder()
+                .attachPath(attachmentFile.getAttachPath())
+                .attachTitle(attachmentFile.getAttachTitle())
+                .build();
+        return attachmentFileRequestDto;
     }
+
 }

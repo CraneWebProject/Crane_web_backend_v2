@@ -16,7 +16,6 @@ public class BoardRequestDto {
 
     private BoardCategory boardCategory;
 
-
     @Builder
     public BoardRequestDto(String boardTitle, String boardContents, BoardCategory boardCategory){
         this.boardTitle = boardTitle;
