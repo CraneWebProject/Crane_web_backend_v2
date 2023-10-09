@@ -1,22 +1,29 @@
 package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller;
 
 import co.elastic.clients.elasticsearch.nodes.Http;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.User.EditMemberDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.JoinDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.LoginDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
+import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.GeneralResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.JoinResponse;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.LoginResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Redis.RedisUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
+import com.sch.crane.cranewebbackend_v2.Service.Exception.ErrorResponse;
+import com.sch.crane.cranewebbackend_v2.Service.Exception.UserNameNotFoundException;
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
+import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.metrics.Stat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -34,18 +41,20 @@ public class UserController {
     private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
 
 
+    //회원가입
     @PostMapping("/signup")
     public ResponseEntity<JoinResponse> join(@RequestBody JoinDto joinDto) {
-        User user = userService.join(joinDto);
+        UserResponseDto userResponseDto = userService.join(joinDto);
         JoinResponse response;
         response = JoinResponse.builder()
                 .code(StatusCode.OK)
                 .message(ResponseMessage.SIGNIN_SUCCESS)
-                .data(user)
+                .data(userResponseDto)
                 .build();
         return ResponseEntity.ok(response);
     }
 
+    //이메일 중복체크
     @GetMapping("/emailcheck")
     public ResponseEntity<JoinResponse> emailCheck(@RequestBody JoinDto joinDto){
         JoinResponse response;
@@ -63,6 +72,116 @@ public class UserController {
                 .data(true)
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //유저 정보 수정
+    @PatchMapping("/updateUserInfo")
+    public ResponseEntity<?> updateUserInfo(@RequestBody EditMemberDto editMemberDto){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
+        String userEmail = userDetails.getUserEmail();
+        log.info("UserEmail : " + userEmail);
+
+        try{ //업데이트 시도
+            userService.updateUserInfo(userEmail, editMemberDto);
+        } catch (UserNameNotFoundException e){ //존재하지 않는 사용자의 경우 예외 처리
+            ErrorResponse response = ErrorResponse.builder()
+                    .status(StatusCode.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND_USER)
+                    .build();
+
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        GeneralResponse response = GeneralResponse.builder()
+                .code(StatusCode.OK)
+                .message(ResponseMessage.UPDATE_OK)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //유저 권한 수정
+    //사이트 관리자 및 임원만 가능
+    @PatchMapping("/updateUserRole")
+    public ResponseEntity<?> updateUserRole(@RequestBody EditMemberDto editMemberDto){
+        try{
+            userService.updateUserRole(editMemberDto);
+        }catch(UserNameNotFoundException e){
+            ErrorResponse response = ErrorResponse.builder()
+                    .status(StatusCode.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND_USER)
+                    .build();
+
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        GeneralResponse response = GeneralResponse.builder()
+                .code(StatusCode.OK)
+                .message(ResponseMessage.UPDATE_OK)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //유저 비밀번호 수정
+    @PatchMapping("/udateuserpassword")
+    public ResponseEntity<?> updateUserPassword(@RequestBody EditMemberDto editMemberDto){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
+        String userEmail = userDetails.getUserEmail();
+
+        try{
+            userService.editPassword(userEmail, editMemberDto);
+        }catch (UserNameNotFoundException e){
+            ErrorResponse response = ErrorResponse.builder()
+                    .status(StatusCode.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND_USER)
+                    .build();
+
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+
+        }catch (BadCredentialsException e){
+            ErrorResponse response = ErrorResponse.builder()
+                    .status(StatusCode.FORBIDDEN)
+                    .message(ResponseMessage.PASSWORD_ERROR)
+                    .build();
+
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        GeneralResponse response =  GeneralResponse.builder()
+                .code(StatusCode.OK)
+                .message(ResponseMessage.PASSWORD_CHANGE_OK)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+    //회원 탈퇴
+    @DeleteMapping("/deleteuser")
+    public ResponseEntity<?> deleteUser(@RequestBody EditMemberDto editMemberDto){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
+        String userEmail = userDetails.getUserEmail();
+
+        try{
+            userService.delUser(userEmail, editMemberDto);
+        }catch (Exception e){
+            ErrorResponse response = ErrorResponse.builder()
+                    .status(StatusCode.BAD_REQUEST)
+                    .message(ResponseMessage.INVALID_REQUEST)
+                    .build();
+
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        GeneralResponse response = GeneralResponse.builder()
+                .code(StatusCode.OK)
+                .message(ResponseMessage.UPDATE_OK)
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.OK );
     }
 
 

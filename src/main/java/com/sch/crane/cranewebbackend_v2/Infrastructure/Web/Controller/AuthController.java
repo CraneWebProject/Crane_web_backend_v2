@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.methods.HttpHead;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,12 +39,14 @@ public class AuthController {
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private static final Long expireTimeMs = 60L;
-    private static final Long RefreshExporeTimeMs = 1000 * 60 * 60 * 60L;
+
+    private static final long ACCESS_TOKEN_TIME = 60 * 5;
+    private static final long REFRESH_TOKEN_TIME = 60 * 60 * 24 * 7;
 
     LoginResponse loginResponse = new LoginResponse();
 
 
+    //TODO: service 에서 처리 가능한 코드는 service 에서 처리 후 예외로 처리 할 것.
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginDto loginDto, HttpServletResponse response){
 
@@ -60,10 +61,10 @@ public class AuthController {
             return new ResponseEntity<>(loginResponse, HttpStatus.BAD_REQUEST);
         }
         User user = optionalUser.get();
-        //password 틀린경우 //보안 강화를 위해 틀린 것이 Email인지 PW인지 알려주지 않음.
+        //TODO:password 틀리면 알려주고, 특정 횟수 이상 틀리면 비밀번호 초기화로 구현 할 것.
+        // password 틀린 횟수를 저장하는 필드를 어떤 엔티티에 둘 것인지 결정 필요.
+        //password 틀린경우
         if(!passwordEncoder.matches(loginDto.getUserPassword(), user.getPassword())){
-            System.out.println(loginDto.getUserPassword());
-            System.out.println(user.getPassword());
             loginResponse = LoginResponse.builder()
                     .code(StatusCode.UNAUTHORIZED)
                     .message(ResponseMessage.LOGIN_FAILED)
@@ -71,8 +72,6 @@ public class AuthController {
             return new ResponseEntity<>(loginResponse, HttpStatus.BAD_REQUEST);
         }
 
-        long currentTimeMillis = System.currentTimeMillis();
-        Long expireTimeEND = expireTimeMs + currentTimeMillis;
         List<String> userRoleList = new ArrayList<>();
 
         if(user.getUserRole() == null){
@@ -81,9 +80,9 @@ public class AuthController {
             userRoleList.add(user.getUserRole().toString());//userRole이 List<String>으로 요구되어 해당 방식으로 변환
 
         }
-        String token = tokenProvider.createToken(user.getUserEmail(), userRoleList, expireTimeMs);
-        String refreshToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, RefreshExporeTimeMs);
-        System.out.println(token);
+        String accessToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, ACCESS_TOKEN_TIME);
+        String refreshToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, REFRESH_TOKEN_TIME);
+        System.out.println(accessToken);
         System.out.println(refreshToken);
         redisUtil.setValues(refreshToken, user.getUserEmail());
 
@@ -95,7 +94,7 @@ public class AuthController {
         responseCookie.setPath("/");
         response.addCookie(responseCookie);
 
-        Cookie accessCookie = new Cookie("accessToken", token);
+        Cookie accessCookie = new Cookie("accessToken", accessToken);
         accessCookie.setMaxAge(5*60);
         accessCookie.setHttpOnly(true);
         accessCookie.setSecure(true);
