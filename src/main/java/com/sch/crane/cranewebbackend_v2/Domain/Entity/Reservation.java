@@ -28,6 +28,15 @@ public class Reservation extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
+    public void updateReservation(LocalDateTime resStartTime, LocalDateTime resEndTime){
+        this.resStartTime = resStartTime;
+        this.resEndTime = resEndTime;
+    }
+
+    public void updateReservationStatus(ReservationStatus status){
+        this.reservationStatus = status;
+    }
+
     @Builder
     public Reservation(LocalDateTime resStartTime, LocalDateTime resEndTime, ReservationStatus reservationStatus, User user){
         this.resStartTime = resStartTime;

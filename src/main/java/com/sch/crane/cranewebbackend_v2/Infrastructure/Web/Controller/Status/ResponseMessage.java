@@ -17,6 +17,10 @@ public class ResponseMessage {
     public static final String REFRESH_TOKEN_FAIL = "토큰 재발급 실패";
     public static final String PASSWORD_CHANGE_OK = "비밀번호 변경 완료";
     public static final String INVALID_REQUEST = "잘못된 요청입니다.";
+    public static final String CREATE_OK = "생성에 성공했습니다.";
+    public static final String CREATE_FAILED = "생성에 실패했습니다.";
+    public static final String CHECK_OK = "조회에 성공했습니다.";
+    public static final String CHECK_FAINED = "조회에 실패했습니다.";
     public static final String UPDATE_OK = "정보 수정에 성공했습니다" ;
     public static final String UPDATE_FAILED = "정보 수정에 실패했습니다";
 }

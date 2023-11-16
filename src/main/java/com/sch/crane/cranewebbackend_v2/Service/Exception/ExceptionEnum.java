@@ -10,6 +10,7 @@ public enum ExceptionEnum {
     DUPLICATE_MEMBER(400, "Duplicate member exists."),
     DUPLICATE_PHONE_NUMBER(400, "Duplicate phone number exists."),
     DUPLICATE_PASSWORD(400, "Duplicate password exists."),
+    CHANGE_UNABLE_STATUS(400, "You cannot change in this status"),
     NOT_EXIST_MEMBER(404,"That account(member) does not exist."),
     INVALID_PERMISSION_TO_MODIFY(403,"You are not authorized to edit this post."),
     REQUIRED_ADMIN_POSITION(403, "ADMIN permission is required."),

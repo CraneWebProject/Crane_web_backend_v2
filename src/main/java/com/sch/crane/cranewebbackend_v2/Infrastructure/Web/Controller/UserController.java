@@ -1,11 +1,8 @@
 package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller;
 
-import co.elastic.clients.elasticsearch.nodes.Http;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.EditMemberDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.JoinDto;
-import com.sch.crane.cranewebbackend_v2.Data.DTO.User.LoginDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
-import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.GeneralResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.JoinResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
@@ -16,18 +13,13 @@ import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.Sta
 import com.sch.crane.cranewebbackend_v2.Service.Exception.ErrorResponse;
 import com.sch.crane.cranewebbackend_v2.Service.Exception.UserNameNotFoundException;
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
-import jdk.jshell.Snippet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.metrics.Stat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @Slf4j

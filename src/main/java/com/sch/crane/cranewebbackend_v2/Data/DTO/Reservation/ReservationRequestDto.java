@@ -13,12 +13,15 @@ public class ReservationRequestDto {
 
     private LocalDateTime resEndTime;
 
-    private Long uid;
+    private Long rid;
+
+    private ReservationStatus reservationStatus;
 
     @Builder
-    public ReservationRequestDto(LocalDateTime resStartTime, LocalDateTime resEndTime, Long uid){
+    public ReservationRequestDto(LocalDateTime resStartTime, LocalDateTime resEndTime, Long rid, ReservationStatus reservationStatus){
         this.resStartTime = resStartTime;
         this.resEndTime = resEndTime;
-        this.uid = uid;
+        this.rid = rid;
+        this.reservationStatus = reservationStatus;
     }
 }

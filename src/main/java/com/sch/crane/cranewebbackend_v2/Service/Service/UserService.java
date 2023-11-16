@@ -28,7 +28,7 @@ public class UserService {
     private final RedisUtil redisUtil;
     private final RedisTemplate redisTemplate;
     private final PasswordEncoder passwordEncoder;
-    private final RandomProvider randomProvider;
+    private final RandomProvider randomProvider; // 랜덤 스트링 생성
 
 
     @Transactional

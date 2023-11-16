@@ -43,6 +43,8 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private  UserRole userRole;
 
+    //TODO: 기수 추가
+    //TODO: 프로필사진 추가
 
     public void updateUserInfo(String userDept, String userPhNum){
         this.userDept = userDept;
