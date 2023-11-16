@@ -10,6 +10,7 @@ import com.sch.crane.cranewebbackend_v2.Domain.Entity.AttachmentFile;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.Board;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.Comment;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardCategory;
+import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
 import com.sch.crane.cranewebbackend_v2.Service.Service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,47 +27,51 @@ public class BoardController {
 
     @PostMapping("/createBoard")
     public ResponseEntity<Board> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
-        return ResponseEntity.ok(boardService.createBoard(boardRequestDto));
+        Board board = boardService.createBoard(boardRequestDto);
+        return ResponseEntity.status(StatusCode.CREATED).body(board);
     }
 
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable Long boardId) {
         boardService.increaseBoardView(boardId);
-        return ResponseEntity.ok(boardService.readBoardById(boardId));
+        BoardResponseDto boardResponseDto = boardService.readBoardById(boardId);
+        return ResponseEntity.status(StatusCode.OK).body(boardResponseDto);
     } // 순서 괜찮은지
 
     @GetMapping("/list/{boardCategory}")
-    public ResponseEntity<List<BoardResponseDto>>
-                getBoardByCategory(@PathVariable("boardCategory")BoardCategory boardCategory) {
-        return ResponseEntity.ok(boardService.readBoardByCategory(boardCategory));
+    public ResponseEntity<List<BoardResponseDto>> getBoardByCategory(@PathVariable("boardCategory")BoardCategory boardCategory) {
+        List<BoardResponseDto> boardResponseDtoList = boardService.readBoardByCategory(boardCategory);
+        return ResponseEntity.status(StatusCode.OK).body(boardResponseDtoList);
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<BoardResponseDto>> getBoardByUser(@PathVariable("userId") Long userId) {
-        return ResponseEntity.ok(boardService.readBoardByUser(userId));
+        List<BoardResponseDto> boardResponseDtoList = boardService.readBoardByUser(userId);
+        return ResponseEntity.status(StatusCode.OK).body(boardResponseDtoList);
     }
 
     @DeleteMapping("/deleteBoard/{boardId}")
-    public Long deleteBoard(@PathVariable("boardId") Long boardId) {
+    public ResponseEntity<String> deleteBoard(@PathVariable("boardId") Long boardId) {
         boardService.delBoard(boardId);
-        return boardId;
+        return ResponseEntity.status(StatusCode.OK).body("보드 삭제됨.");
     }
 
     @PutMapping("/updateBoard/{boardId}")
     public ResponseEntity<Board> updateBoard(@PathVariable("boardId") Long boardId, @RequestBody BoardRequestDto boardRequestDto) {
-        return ResponseEntity.ok(boardService.editBoard(boardId, boardRequestDto));
+        Board board = boardService.editBoard(boardId, boardRequestDto);
+        return ResponseEntity.status(StatusCode.OK).body(board);
     }
 
     @PostMapping("/createComment")
-    public ResponseEntity<Comment>
-                createComment(@PathVariable Long boardId,@RequestBody CommentRequestDto commentRequestDto) {
-        return ResponseEntity.ok(boardService.writeComment(boardId, commentRequestDto));
+    public ResponseEntity<Comment> createComment(@PathVariable Long boardId,@RequestBody CommentRequestDto commentRequestDto) {
+        Comment comment = boardService.writeComment(boardId, commentRequestDto);
+        return ResponseEntity.status(StatusCode.CREATED).body(comment);
     }
 
     @PutMapping("/updateComment/{commentId}")
-    public ResponseEntity<Comment>
-                updateComment(@PathVariable("commentId")Long commentId, @RequestBody CommentRequestDto commentRequestDto) {
-        return ResponseEntity.ok(boardService.editComment(commentId, commentRequestDto));
+    public ResponseEntity<Comment> updateComment(@PathVariable("commentId")Long commentId, @RequestBody CommentRequestDto commentRequestDto) {
+        Comment comment = boardService.editComment(commentId, commentRequestDto);
+        return ResponseEntity.status(StatusCode.OK).body(comment);
     }
 
 /*   @GetMapping("/")
@@ -83,13 +88,16 @@ public class BoardController {
 
     @PostMapping("/attachmentFile")
     public ResponseEntity<AttachmentFile> createAttachmentFile(@RequestBody Long boardId, AttachmentFileRequestDto attachmentFileRequestDto) {
-        return ResponseEntity.ok(boardService.createAttachmentFile(boardId, attachmentFileRequestDto));
+        AttachmentFile attachmentFile = boardService.createAttachmentFile(boardId, attachmentFileRequestDto);
+        return ResponseEntity.status(StatusCode.CREATED).body(attachmentFile);
+
     }
 
     @PutMapping("/editAttachmentFile/{attachmentFileId}")
     public ResponseEntity<AttachmentFile>
             updateAttachmentFile(@PathVariable("attachmentFileId") Long attachmentFileId, @RequestBody AttachmentFileRequestDto attachmentFileRequestDto) {
-        return ResponseEntity.ok(boardService.editAttachmentFile(attachmentFileId, attachmentFileRequestDto));
+        AttachmentFile attachmentFile = boardService.editAttachmentFile(attachmentFileId, attachmentFileRequestDto);
+        return ResponseEntity.status(StatusCode.OK).body(attachmentFile);
     }
 
     @DeleteMapping("/deleteAttachmentFile/{attachmentFileId}")
@@ -100,7 +108,8 @@ public class BoardController {
 
     @GetMapping("/{attachmentFileId}")
     public ResponseEntity<AttachmentFileRequestDto> getAttachmentFile(@PathVariable("attachmentFileId")Long attachmentFileId) {
-        return ResponseEntity.ok(boardService.readAttachmentFile(attachmentFileId));
+        AttachmentFileRequestDto attachmentFileRequestDto = boardService.readAttachmentFile(attachmentFileId);
+        return ResponseEntity.status(StatusCode.OK).body(attachmentFileRequestDto);
     }
 
 }

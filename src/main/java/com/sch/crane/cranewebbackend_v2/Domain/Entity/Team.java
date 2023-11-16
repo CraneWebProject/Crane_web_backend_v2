@@ -22,6 +22,11 @@ public class Team {
 
     private String teamName;
 
+    public void updateTeam(TeamType teamType, String teamName)
+    {
+        this.teamType = teamType;
+        this.teamName = teamName;
+    }
     @Builder
     public Team(Long tid, TeamType teamType, String teamName){
 

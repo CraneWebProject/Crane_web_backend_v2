@@ -19,4 +19,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     @Query("update Board b set b.boardView = b.boardView +1 where b.bid =: bId")
     int increaseView(Long bId);
+
+    @Query("select b from Board b order by b.bid desc ")
+    List<Board> findAllByDesc();
 }
