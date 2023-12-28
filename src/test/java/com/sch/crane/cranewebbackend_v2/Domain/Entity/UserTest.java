@@ -39,9 +39,9 @@ class UserTest {
         Assertions.assertThat(user.getUserStdId()).isEqualTo("20180000");
     }
 
-    @Test
-    @DisplayName("User Repository Test")
-    void UserRepositoryTest(){
-
-    }
+//    @Test
+//    @DisplayName("User Repository Test")
+//    void UserRepositoryTest(){
+//
+//    }
 }

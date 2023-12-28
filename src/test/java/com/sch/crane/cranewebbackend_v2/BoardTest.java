@@ -43,7 +43,7 @@ public class BoardTest {
     User user = User.builder()
             .userEmail("test@test.com")
             .userPassword("1234")
-            .userBirth(LocalDateTime.now())
+            .userBirth(LocalDate.now())
             .userDept("IoT")
             .userName("testName")
             .userPhNum("01000001234")

@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -36,13 +37,22 @@ public class UserController {
     //회원가입
     @PostMapping("/signup")
     public ResponseEntity<JoinResponse> join(@RequestBody JoinDto joinDto) {
-        UserResponseDto userResponseDto = userService.join(joinDto);
         JoinResponse response;
-        response = JoinResponse.builder()
-                .code(StatusCode.OK)
-                .message(ResponseMessage.SIGNIN_SUCCESS)
-                .data(userResponseDto)
-                .build();
+        //Email 중복시 실패 반환
+        if(userService.isEmailExist(joinDto.getUserEmail())){
+            response = JoinResponse.builder()
+                    .code(StatusCode.DATA_CONFLICT)
+                    .message(ResponseMessage.EMAIL_EXISTED)
+                    .data(false)
+                    .build();
+        }else { //미 중복시 정상 가입 성공
+            UserResponseDto userResponseDto = userService.join(joinDto);
+            response = JoinResponse.builder()
+                    .code(StatusCode.OK)
+                    .message(ResponseMessage.SIGNIN_SUCCESS)
+                    .data(userResponseDto)
+                    .build();
+        }
         return ResponseEntity.ok(response);
     }
 
@@ -67,6 +77,7 @@ public class UserController {
     }
 
     //유저 정보 수정
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @PatchMapping("/updateUserInfo")
     public ResponseEntity<?> updateUserInfo(@RequestBody EditMemberDto editMemberDto){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -95,6 +106,7 @@ public class UserController {
 
     //유저 권한 수정
     //사이트 관리자 및 임원만 가능
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER')")
     @PatchMapping("/updateUserRole")
     public ResponseEntity<?> updateUserRole(@RequestBody EditMemberDto editMemberDto){
         try{
@@ -117,6 +129,7 @@ public class UserController {
     }
 
     //유저 비밀번호 수정
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @PatchMapping("/udateuserpassword")
     public ResponseEntity<?> updateUserPassword(@RequestBody EditMemberDto editMemberDto){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -152,6 +165,7 @@ public class UserController {
 
 
     //회원 탈퇴
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @DeleteMapping("/deleteuser")
     public ResponseEntity<?> deleteUser(@RequestBody EditMemberDto editMemberDto){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

@@ -1,7 +1,10 @@
 package com.sch.crane.cranewebbackend_v2.Util;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Random;
 
+@Component
 public class RandomProvider {
 
     private final static int LEFT_LIMIT = 48;
