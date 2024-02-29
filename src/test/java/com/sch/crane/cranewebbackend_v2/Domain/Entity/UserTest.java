@@ -23,7 +23,7 @@ class UserTest {
                 .userDept("IoT")
                 .userName("testName")
                 .userPhNum("01000001234")
-                .userRole(UserRole.MEMBER)
+                .userRole(UserRole.ROLE_MEMBER)
                 .userSession(UserSession.BASS)
                 .userStdId("20180000")
                 .build();
@@ -32,9 +32,9 @@ class UserTest {
         Assertions.assertThat(user.getUserPassword()).isEqualTo("1234");
         Assertions.assertThat(user.getUserBirth()).isEqualTo(LocalDate.now());
         Assertions.assertThat(user.getUserDept()).isEqualTo("IoT");
-        Assertions.assertThat(user.getUsername()).isEqualTo("testName");
+        Assertions.assertThat(user.getUserName()).isEqualTo("testName");
         Assertions.assertThat(user.getUserPhNum()).isEqualTo("01000001234");
-        Assertions.assertThat(user.getUserRole()).isEqualTo(UserRole.MEMBER);
+        Assertions.assertThat(user.getUserRole()).isEqualTo(UserRole.ROLE_MEMBER);
         Assertions.assertThat(user.getUserSession()).isEqualTo(UserSession.BASS);
         Assertions.assertThat(user.getUserStdId()).isEqualTo("20180000");
     }

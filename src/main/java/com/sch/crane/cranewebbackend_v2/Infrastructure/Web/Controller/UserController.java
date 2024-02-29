@@ -6,7 +6,6 @@ import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.GeneralResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.JoinResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Redis.RedisUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
@@ -29,7 +28,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
-    private final RedisUtil redisUtil;
+//    private final RedisUtil redisUtil;
     private final Long expireTimeMs = 300000l;
     private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
 

@@ -93,7 +93,7 @@ public class BoardService {
                 .boardView(board.getBoardView())
                 .boardCategory(board.getBoardCategory())
                 .uid(board.getUser().getUid())
-                .userName(board.getUser().getUsername())
+                .userName(board.getUser().getUserName())
                 .build();
         return boardResponseDto;
     }
@@ -114,7 +114,7 @@ public class BoardService {
                     .boardView(b.getBoardView())
                     .boardContents(b.getBoardContents())
                     .uid(b.getUser().getUid())
-                    .userName(b.getUser().getUsername())
+                    .userName(b.getUser().getUserName())
                     .build();
 
             boardResponseDtoList.add(boardResponseDto);
@@ -135,7 +135,7 @@ public class BoardService {
                     .boardTitle(b.getBoardTitle())
                     .boardView(b.getBoardView())
                     .boardContents(b.getBoardContents())
-                    .userName(b.getUser().getUsername())
+                    .userName(b.getUser().getUserName())
                     .build();
             boardResponseDtoList.add(boardResponseDto);
         }
@@ -179,7 +179,7 @@ public class BoardService {
                     .commentContents(c.getCommentContents())
                     .board(c.getBoard())
                     .uid(c.getUser().getUid())
-                    .userName(c.getUser().getUsername())
+                    .userName(c.getUser().getUserName())
                     .build();
             commentResponseDtoList.add(commentResponseDto);
         }

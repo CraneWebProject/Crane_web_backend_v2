@@ -1,18 +1,12 @@
 package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security;
 
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.TokenResponse;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsServiceImpl;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Redis.RedisUtil;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,11 +15,8 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,83 +24,76 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class TokenProvider {
+@AllArgsConstructor
+public class TokenProvider implements InitializingBean {
+//    private  final long ACCESS_EXPIRATION_TIME; // 1일
 
-    private final UserDetailsServiceImpl userDetailsService;
-    private final RedisUtil redisUtil;
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String AUTHORIZATION_KEY = "auth";
-//    private static final String BEARER_PREFIX = "Bearer ";
-
-//    private static final long ACCESS_TOKEN_TIME = 60 * 5;
-//    private static final long REFRESH_TOKEN_TIME = 60 * 60 * 24 * 7;
-
+//    public static final String AUTHORIZATION_HEADER = "Authorization";
     @Value("${spring.jwt.secret}")
-    private String secretKey;
+    public String secretKey;
+
+    @Value("${spring.jwt.access-expiration-time}")
+    public Long ACCESS_EXPIRATION_TIME;
+
+    public static final String AUTHORIZATION_KEY = "auth";
     private Key key;
-    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+    private final SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS512;
 
-    @PostConstruct
-    protected void init() {
-//        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
-        byte[] secretKeyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
-        key = Keys.hmacShaKeyFor(secretKeyBytes);
-    }
-
-
-    public String resolveToken(HttpServletRequest request) {
-
-//        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+    //1. Bean 생성 후 주입 받은 후 할당
+//    public TokenProvider(){
 //
-//        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-//            return bearerToken.substring(8);
-//        }
-        return request.getHeader(AUTHORIZATION_HEADER);
+//    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception   {
+//    secret값을 Base64 Decode해서 key 변수에 할당하기 위해 사용
+        byte[] secretKeyBytes = Decoders.BASE64.decode(secretKey);
+        this.key = Keys.hmacShaKeyFor(secretKeyBytes);
     }
 
-    public String createToken(String userEmail,List<String> roles,Long TOKEN_TIME) {
+//    @PostConstruct
+//    protected void init() {
+////        secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes());
+//
+//    }
 
-        Claims claims = Jwts.claims().setSubject(userEmail);
-        Date now = new Date();
+    public String createToken(Authentication authentication /*, Long TOKEN_TIME*/) {
+        //Refresh Token 생성 시 위해 TokenTime 인자 생성
 
-        return
-                Jwts.builder()
-                        .setClaims(claims)
-                        .claim(AUTHORIZATION_KEY,roles)
-                        .setSubject(userEmail)
-                        .setIssuedAt(now)
-                        .setExpiration(new Date(now.getTime() + TOKEN_TIME))
-                        .signWith(key, signatureAlgorithm)
-                        .compact();
+        String authorities = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+
+        long now = (new Date()).getTime();
+        Date validity = new Date(now + ACCESS_EXPIRATION_TIME);
+
+        return Jwts.builder()
+                .claim(AUTHORIZATION_KEY, authorities)
+                .setSubject(authentication.getName())
+                .setIssuedAt(new Date(now))
+                .setExpiration(validity)
+                .signWith(key, signatureAlgorithm)
+                .compact();
     }
 
+    //Token으로 Claim을 만들고 이를 이용해 유저 객체 만들어 authentication 객체 리턴
+    public Authentication getAuthentication(String token){
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
 
-    public TokenResponse refreshToken(String refreshToken) {
-        Long tokenValidTime = 1000 * 60 * 60l;
-        Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
-        // Check if the refresh token exists in Redis
-        if (redisUtil.existData(refreshToken)) {
-            // Get the email associated with the refresh token from Redis
-            String userEmail = redisUtil.getData(refreshToken);
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get(AUTHORIZATION_KEY).toString().split(","))
+                        .map(SimpleGrantedAuthority::new).toList();
 
-            // Get the user details from the userDetailsService
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+        User principal = new User(claims.getSubject(), "", authorities);
 
-            // Generate a new access token
-            String newAccessToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), tokenValidTime);
-            String newRefreshToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), RefreshExpireTimeMs);
-
-            TokenResponse tokenResponse = TokenResponse.builder()
-                    .RefreshToken(newRefreshToken)
-                    .AccessToken(newAccessToken)
-                    .build();
-            redisUtil.setValues(newRefreshToken, userEmail);
-            redisUtil.deleteData(refreshToken);
-            return tokenResponse;
-        } else {
-            throw new IllegalStateException("Invalid refresh token");
-        }
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }
+
 
     public boolean validateToken(String token) {
 
@@ -129,39 +113,92 @@ public class TokenProvider {
         return false;
     }
 
-    public TokenResponse logoutResfreshToken(String refreshToken) {
-        Long tvd = 1000l;
-        Long rfd = 1000l;
-        // Check if the refresh token exists in Redis
-        if (redisUtil.existData(refreshToken)) {
-            // Get the email associated with the refresh token from Redis
-            String userEmail = redisUtil.getData(refreshToken);
 
-            // Get the user details from the userDetailsService
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+//    public String resolveToken(HttpServletRequest request) {
+//
+////        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
+////
+////        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
+////            return bearerToken.substring(8);
+////        }
+//        return request.getHeader(AUTHORIZATION_HEADER);
+//    }
 
-            // Generate a new access token
-            String newAccessToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), tvd);
-            String newRefreshToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), rfd);
+//    public String resolveACToken(HttpServletRequest request){
+//        return TokenCookieUtil.extractTokenFromCookie(request, "accessToken");
+//    }
 
-            TokenResponse tokenResponse = TokenResponse.builder()
-                    .RefreshToken(newRefreshToken)
-                    .AccessToken(newAccessToken)
-                    .build();
-            redisUtil.deleteData(refreshToken);
-            return tokenResponse;
-        } else {
-            throw new IllegalStateException("Invalid refresh token");
-        }
-    }
-    public Claims getUserInfoFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
+//    public String resolveRFToken(HttpServletRequest request){
+//        return TokenCookieUtil.extractTokenFromCookie(request, "refreshToken");
+//    }
 
-    public Authentication createAuthentication(String userEmail) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
-        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-    }
+
+
+
+
+
+
+
+
+//    public TokenResponse refreshToken(String refreshToken) {
+//        Long tokenValidTime = 1000 * 60 * 60l;
+//        Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
+//        // Check if the refresh token exists in Redis
+//        if (redisUtil.existData(refreshToken)) {
+//            // Get the email associated with the refresh token from Redis
+//            String userEmail = redisUtil.getData(refreshToken);
+//
+//            // Get the user details from the userDetailsService
+//            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+//
+//            // Generate a new access token
+//            String newAccessToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), tokenValidTime);
+//            String newRefreshToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), RefreshExpireTimeMs);
+//
+//            TokenResponse tokenResponse = TokenResponse.builder()
+//                    .RefreshToken(newRefreshToken)
+//                    .AccessToken(newAccessToken)
+//                    .build();
+//            redisUtil.setValues(newRefreshToken, userEmail);
+//            redisUtil.deleteData(refreshToken);
+//            return tokenResponse;
+//        } else {
+//            throw new IllegalStateException("Invalid refresh token");
+//        }
+//    }
+
+
+
+//    public TokenResponse logoutResfreshToken(String refreshToken) {
+//        Long tvd = 1000l;
+//        Long rfd = 1000l;
+//        // Check if the refresh token exists in Redis
+//        if (redisUtil.existData(refreshToken)) {
+//            // Get the email associated with the refresh token from Redis
+//            String userEmail = redisUtil.getData(refreshToken);
+//
+//            // Get the user details from the userDetailsService
+//            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+//
+//            // Generate a new access token
+//            String newAccessToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), tvd);
+//            String newRefreshToken = createToken(userDetails.getUsername(), getRolesFromUserDetails(userDetails), rfd);
+//
+//            TokenResponse tokenResponse = TokenResponse.builder()
+//                    .RefreshToken(newRefreshToken)
+//                    .AccessToken(newAccessToken)
+//                    .build();
+//            redisUtil.deleteData(refreshToken);
+//            return tokenResponse;
+//        } else {
+//            throw new IllegalStateException("Invalid refresh token");
+//        }
+//    }
+//    public Claims getUserInfoFromToken(String token) {
+//        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+//    }
+
+
 
     private List<String> getRolesFromUserDetails(UserDetails userDetails) {
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
@@ -169,8 +206,6 @@ public class TokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
     }
-
-
 
 //    private final Logger logger = LoggerFactory.getLogger(TokenProvider.class);
 //    private static final String AUTHORITIES_KEY = "auth";

@@ -45,7 +45,7 @@ public class ReservationService {
         return ReservationResponseDto.builder()
                 .resStartTime(res.getResStartTime())
                 .resEndTime(res.getResEndTime())
-                .userName(res.getUser().getUsername())
+                .userName(res.getUser().getUserName())
                 .uid(res.getUser().getUid())
                 .reservationStatus(res.getReservationStatus())
                 .build();
@@ -61,7 +61,7 @@ public class ReservationService {
                 .resEndTime(reservation.getResEndTime())
                 .reservationStatus(reservation.getReservationStatus())
                 .uid(reservation.getUser().getUid())
-                .userName(reservation.getUser().getUsername())
+                .userName(reservation.getUser().getUserName())
                 .build();
     }
 
@@ -74,7 +74,7 @@ public class ReservationService {
 
         for(Reservation r : reservation){
             ReservationResponseDto dto = ReservationResponseDto.builder()
-                    .userName(r.getUser().getUsername())
+                    .userName(r.getUser().getUserName())
                     .uid(r.getUser().getUid())
                     .reservationStatus(r.getReservationStatus())
                     .resStartTime(r.getResStartTime())
@@ -97,7 +97,7 @@ public class ReservationService {
 
         for(Reservation r : reservationList){
             ReservationResponseDto dto = ReservationResponseDto.builder()
-                    .userName(r.getUser().getUsername())
+                    .userName(r.getUser().getUserName())
                     .uid(r.getUser().getUid())
                     .resStartTime(r.getResStartTime())
                     .resEndTime(r.getResEndTime())
@@ -120,15 +120,15 @@ public class ReservationService {
 
         //요청자가 예약 생성자, 사이트 관리자, 임원인 경우에만 수정 가능.
         if(reservation.getUser() == RequestUser ||
-                Role == UserRole.ADMIN ||
-                Role == UserRole.MANAGER) {
+                Role == UserRole.ROLE_ADMIN ||
+                Role == UserRole.ROLE_MEMBER) {
 
             reservation.updateReservation(dto.getResStartTime(), dto.getResEndTime());
 
             Reservation res = reservationRepository.save(reservation);
 
             return ReservationResponseDto.builder()
-                    .userName(res.getUser().getUsername())
+                    .userName(res.getUser().getUserName())
                     .uid(res.getUser().getUid())
                     .reservationStatus(res.getReservationStatus())
                     .resStartTime(res.getResStartTime())
@@ -152,7 +152,7 @@ public class ReservationService {
         UserRole Role = RequestUser.getUserRole();
 
         //요청자가 예약 생성자, 사이트 관리자, 임원인 경우에만 삭제 가능.
-        if(reservation.getUser() == RequestUser || Role == UserRole.ADMIN || Role == UserRole.MANAGER) {
+        if(reservation.getUser() == RequestUser || Role == UserRole.ROLE_ADMIN || Role == UserRole.ROLE_MEMBER) {
             //승인 상태 이전에만 삭제 가능
             if(reservation.getReservationStatus() != ReservationStatus.WAIT_APPROVAL){
                 throw new IllegalStateException("Cannot Delete reservation in this state.");

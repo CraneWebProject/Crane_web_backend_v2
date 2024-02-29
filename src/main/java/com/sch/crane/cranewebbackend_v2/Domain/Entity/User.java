@@ -10,11 +10,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Set;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User implements UserDetails {
+public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long uid;
@@ -43,6 +44,14 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private  UserRole userRole;
 
+    @ManyToMany
+    @JoinTable(
+        name = "user_authority",
+        joinColumns = {@JoinColumn(name = "uid", referencedColumnName = "uid")},
+        inverseJoinColumns = {@JoinColumn(name = "authority_name", referencedColumnName = "authority_name")}
+    )
+    private Collection<Authority> authorities;
+
     //TODO: 기수 추가
     //TODO: 프로필사진 추가
 
@@ -64,12 +73,12 @@ public class User implements UserDetails {
         this.userPassword = randPassword;
         this.userName = "탈퇴한 사용자";
         this.userPhNum = "01000000000";
-        this.userRole = UserRole.STAN_BY;
+        this.userRole = UserRole.ROLE_STAN_BY;
     }
 
     @Builder
     public User(Long uid,String userEmail,String userPassword,String userName,String userDept,String userStdId,
-                String userPhNum,LocalDate userBirth,UserSession userSession, UserRole userRole) {
+                String userPhNum,LocalDate userBirth,UserSession userSession, UserRole userRole, Collection<Authority> authorities ) {
         this.uid = uid;
 
         this.userEmail = userEmail;
@@ -90,70 +99,8 @@ public class User implements UserDetails {
 
         this.userRole = userRole;
 
+        this.authorities = authorities;
 
     }
 
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
-
-    @Override
-    public String toString() {
-        return super.toString();
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
-    }
-
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-
-    @Override
-    @JsonIgnore
-    public String getPassword() {
-        return this.userPassword;
-    }
-
-    @Override
-    public String getUsername() {
-        return this.userName;
-    }
-
-    @Override
-    public boolean isAccountNonExpired() {
-        return false;
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isAccountNonLocked() {
-        return false;
-    }
-
-    @Override
-    @JsonIgnore
-    public boolean isCredentialsNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
 }

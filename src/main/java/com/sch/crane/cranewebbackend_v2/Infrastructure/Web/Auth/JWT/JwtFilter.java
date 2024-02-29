@@ -1,26 +1,22 @@
 package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenCookieUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Service.Exception.ErrorResponse;
-import io.jsonwebtoken.Claims;
+import io.netty.util.internal.StringUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
-import org.springframework.web.filter.GenericFilterBean;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -28,30 +24,68 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
-
     private final TokenProvider tokenProvider;
+//    private final RedisUtil redisUtil;
+    @Value("${spring.jwt.access-expiration-time}")
+    private long ACCESS_TOKEN_TIME;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = tokenProvider.resolveToken(request);
+//        String token = tokenProvider.resolveToken(request);
+        //Cookie 수정
+        String ACToken = resolveAccessToken(request);
 
-        if(token != null){
-            if(!tokenProvider.validateToken(token)){  // JWT 토큰이 올바르지 않으면 예외를 처리를한다
+//        if(ACToken != null){
+//            if(!tokenProvider.validateToken(ACToken)){ //액세스 토큰이 만료되었을 경우 리프레시 토큰 조회
+//                String RFToken = tokenProvider.resolveRFToken(request);
+//                //리프레시 토큰 유효성 검사
+//                if(!redisUtil.existData(RFToken) || tokenProvider.validateToken(RFToken)){
+//                    jwtExceptionHandler(response, "Token Error", HttpStatus.UNAUTHORIZED.value());
+//                    return;
+//                }
+//                //리프레시 토큰 인증 정보 빼오기
+//                Claims info = tokenProvider.getUserInfoFromToken(RFToken);
+//                //리프레시 토큰 인증 객체로 변경
+//                setAuthentication(info.getSubject());
+//                //액세스 토큰 재발급
+//                Authentication authentication = tokenProvider.getAuthentication(RFToken);
+//                String  renewAC = tokenProvider.createToken(authentication, ACCESS_TOKEN_TIME);
+//                TokenCookieUtil.setTokenCookie(response, "accessToken", renewAC);
+//
+//            } // 다음 필터 실행
+//            filterChain.doFilter(request,response);// 필터 체인의 다음 필터를 실행한다
+//
+//        }
+
+        if(ACToken != null){
+            if(!tokenProvider.validateToken(ACToken)){  // JWT 토큰이 올바르지 않으면 예외를 처리를한다
                 jwtExceptionHandler(response, "Token Error", HttpStatus.UNAUTHORIZED.value());
                 return;
             }
-            Claims info = tokenProvider.getUserInfoFromToken(token); //JWT 토큰으로부터 추출한 사용자 정보를 Claims 객체로 반환한다
-            setAuthentication(info.getSubject());// Security Context와 Authentication 객체를 생성한다
+            Authentication authentication = tokenProvider.getAuthentication(ACToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.debug("Security Context에 '{}' 인증정보를 저장했습니다. uri : {}", authentication, request.getRequestURI());
         }
         filterChain.doFilter(request,response);// 필터 체인의 다음 필터를 실행한다
     }
-    public void setAuthentication(String userEmail) { // Context와 Authentication 객체를 생성하는 메소드
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        Authentication authentication = tokenProvider.createAuthentication(userEmail);
-        context.setAuthentication(authentication);
 
-        SecurityContextHolder.setContext(context);
+    public String resolveAccessToken(HttpServletRequest request){
+        String AccessToken = TokenCookieUtil.extractTokenFromCookie(request, "accessToken");
+
+        if(StringUtils.hasText(AccessToken)){
+            return AccessToken;
+        }
+        return null;
+
     }
+
+//    public void setAuthentication(String userEmail) { // Context와 Authentication 객체를 생성하는 메소드
+//        SecurityContext context = SecurityContextHolder.createEmptyContext();
+//        Authentication authentication = tokenProvider.createAuthentication(userEmail);
+//        context.setAuthentication(authentication);
+//
+//        SecurityContextHolder.setContext(context);
+//    }
     public void jwtExceptionHandler(HttpServletResponse response, String msg, int statusCode) { // 예외 발생시 처리하는 메서드
         response.setStatus(statusCode);
         response.setContentType("application/json");

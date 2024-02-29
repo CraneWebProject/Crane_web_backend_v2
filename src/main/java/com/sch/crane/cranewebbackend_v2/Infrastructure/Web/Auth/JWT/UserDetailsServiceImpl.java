@@ -1,6 +1,7 @@
 package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT;
 
 import com.sch.crane.cranewebbackend_v2.Data.Repository.User.UserRepository;
+import com.sch.crane.cranewebbackend_v2.Service.Exception.UserNameNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserDetails loadUserByUsername(final String userEmail) {
+    public UserDetails loadUserByUsername(final String userEmail) throws UserNameNotFoundException {
         return userRepository.findWithAuthoritiesByUserEmail(userEmail)
                 .map(user -> createUser(userEmail, user))
                 .orElseThrow(() -> new UsernameNotFoundException(userEmail + " DB에 존재하지 않는 유저"));
@@ -30,13 +31,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private User createUser(String userEmail, com.sch.crane.cranewebbackend_v2.Domain.Entity.User user){
 
-        List<GrantedAuthority> grantedAuthorityList = user.getAuthorities().stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getAuthority()))
+        List<GrantedAuthority> authorities = user.getAuthorities().stream()
+                .map(authority -> new SimpleGrantedAuthority(authority.getAuthorityName()))
                 .collect(Collectors.toList());
 
         return new User(user.getUserEmail(),
                 user.getUserPassword(),
-                grantedAuthorityList);
+                authorities);
     }
 
 

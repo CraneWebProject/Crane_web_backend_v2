@@ -4,7 +4,6 @@ import com.sch.crane.cranewebbackend_v2.Data.DTO.User.LoginDto;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.UserRole;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.LoginResponse;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Redis.RedisUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
@@ -17,6 +16,10 @@ import org.apache.http.client.methods.HttpHead;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,12 +39,10 @@ import java.util.Optional;
 public class AuthController {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     private final UserService userservice;
-    private final RedisUtil redisUtil;
+//    private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-
-    private static final long ACCESS_TOKEN_TIME = 60 * 5;
-    private static final long REFRESH_TOKEN_TIME = 60 * 60 * 24 * 7;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     LoginResponse loginResponse = new LoginResponse();
 
@@ -64,7 +65,7 @@ public class AuthController {
         //TODO:password 틀리면 알려주고, 특정 횟수 이상 틀리면 비밀번호 초기화로 구현 할 것.
         // password 틀린 횟수를 저장하는 필드를 어떤 엔티티에 둘 것인지 결정 필요.
         //password 틀린경우
-        if(!passwordEncoder.matches(loginDto.getUserPassword(), user.getPassword())){
+        if(!passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())){
             loginResponse = LoginResponse.builder()
                     .code(StatusCode.UNAUTHORIZED)
                     .message(ResponseMessage.LOGIN_FAILED)
@@ -75,24 +76,25 @@ public class AuthController {
         List<String> userRoleList = new ArrayList<>();
 
         if(user.getUserRole() == null){
-            userRoleList.add(UserRole.STAN_BY.toString());
+            userRoleList.add(UserRole.ROLE_STAN_BY.toString());
         }else {
             userRoleList.add(user.getUserRole().toString());//userRole이 List<String>으로 요구되어 해당 방식으로 변환
 
         }
-        String accessToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, ACCESS_TOKEN_TIME);
-        String refreshToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, REFRESH_TOKEN_TIME);
-        System.out.println(accessToken);
-        System.out.println(refreshToken);
-        redisUtil.setValues(refreshToken, user.getUserEmail());
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(loginDto.getUserEmail(), loginDto.getUserPassword());
+        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+        String accessToken = tokenProvider.createToken(authentication);
+//        String refreshToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, REFRESH_TOKEN_TIME);
+//        redisUtil.setValues(refreshToken, user.getUserEmail());
 
 
-        Cookie responseCookie = new Cookie("refreshToken", refreshToken);
-        responseCookie.setMaxAge(7*24*60*60);
-        responseCookie.setHttpOnly(true);
-        responseCookie.setSecure(true);
-        responseCookie.setPath("/");
-        response.addCookie(responseCookie);
+//        Cookie responseCookie = new Cookie("refreshToken", refreshToken);
+//        responseCookie.setMaxAge(7*24*60*60);
+//        responseCookie.setHttpOnly(true);
+//        responseCookie.setSecure(true);
+//        responseCookie.setPath("/");
+//        response.addCookie(responseCookie);
 
         Cookie accessCookie = new Cookie("accessToken", accessToken);
         accessCookie.setMaxAge(5*60);

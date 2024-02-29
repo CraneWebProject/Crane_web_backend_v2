@@ -47,7 +47,7 @@ public class BoardTest {
             .userDept("IoT")
             .userName("testName")
             .userPhNum("01000001234")
-            .userRole(UserRole.MEMBER)
+            .userRole(UserRole.ROLE_MEMBER)
             .userSession(UserSession.BASS)
             .userStdId("20180000")
             .build();

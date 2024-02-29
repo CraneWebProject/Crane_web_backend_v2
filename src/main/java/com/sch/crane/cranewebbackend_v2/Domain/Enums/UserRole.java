@@ -4,11 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum UserRole {
-    ADMIN(Authority.ADMIN_NUM,Authority.ADMIN), // 사이트 관리자
-    MANAGER(Authority.MANAGER_NUM,Authority.MANAGER), // 임원
-    MEMBER(Authority.MEMBER_NUM,Authority.MEMBER), // 일반 부원
-    GRADUATED(Authority.GRADUATED_NUM,Authority.GRADUATED), // 졸업자
-    STAN_BY(Authority.STANBY_NUM,Authority.STAN_BY); // 가입 대기
+    ROLE_ADMIN(Authority.ADMIN_NUM,Authority.ADMIN), // 사이트 관리자
+    ROLE_MANAGER(Authority.MANAGER_NUM,Authority.MANAGER), // 임원
+    ROLE_MEMBER(Authority.MEMBER_NUM,Authority.MEMBER), // 일반 부원
+    ROLE_GRADUATED(Authority.GRADUATED_NUM,Authority.GRADUATED), // 졸업자
+    ROLE_STAN_BY(Authority.STANBY_NUM,Authority.STAN_BY); // 가입 대기
 
     private final int num;
     private final String authority;
