@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 
 public class Board extends BaseTimeEntity {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bid;
 
     private String boardTitle;

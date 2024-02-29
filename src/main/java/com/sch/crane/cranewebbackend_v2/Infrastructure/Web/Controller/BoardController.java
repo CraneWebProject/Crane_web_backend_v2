@@ -40,9 +40,10 @@ public class BoardController {
         return ResponseEntity.ok(boardService.readBoardById(boardId));
     } // 순서 괜찮은지
 
-    @GetMapping("/list/{boardCategory}")
+    @GetMapping("/list")
     public ResponseEntity<List<BoardResponseDto>>
-                getBoardByCategory(@PathVariable("boardCategory")BoardCategory boardCategory) {
+                getBoardByCategory(@RequestBody BoardRequestDto boardRequestDto) {
+        BoardCategory boardCategory =  boardRequestDto.getBoardCategory();
         return ResponseEntity.ok(boardService.readBoardByCategory(boardCategory));
     }
 
@@ -103,9 +104,9 @@ public class BoardController {
         return attachmentFileId;
     }
 
-    @GetMapping("/{attachmentFileId}")
-    public ResponseEntity<AttachmentFileRequestDto> getAttachmentFile(@PathVariable("attachmentFileId")Long attachmentFileId) {
-        return ResponseEntity.ok(boardService.readAttachmentFile(attachmentFileId));
-    }
+//    @GetMapping("/{attachmentFileId}")
+//    public ResponseEntity<AttachmentFileRequestDto> getAttachmentFile(@PathVariable("attachmentFileId")Long attachmentFileId) {
+//        return ResponseEntity.ok(boardService.readAttachmentFile(attachmentFileId));
+//    }
 
 }
