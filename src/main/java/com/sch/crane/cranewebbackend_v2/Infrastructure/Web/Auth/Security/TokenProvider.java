@@ -113,6 +113,15 @@ public class TokenProvider implements InitializingBean {
         return false;
     }
 
+    public boolean isTokenExpired(String token){
+        try{
+            Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+            return claims.getExpiration().before(new Date());
+        }catch (ExpiredJwtException e){
+            return true;
+        }
+    }
+
 
 //    public String resolveToken(HttpServletRequest request) {
 //

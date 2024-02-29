@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenCookieUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Service.Exception.ErrorResponse;
-import io.netty.util.internal.StringUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,7 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
 //        String token = tokenProvider.resolveToken(request);
         //Cookie 수정
         String ACToken = resolveAccessToken(request);
-
+        String username = null;
 //        if(ACToken != null){
 //            if(!tokenProvider.validateToken(ACToken)){ //액세스 토큰이 만료되었을 경우 리프레시 토큰 조회
 //                String RFToken = tokenProvider.resolveRFToken(request);
@@ -60,6 +60,9 @@ public class JwtFilter extends OncePerRequestFilter {
         if(ACToken != null){
             if(!tokenProvider.validateToken(ACToken)){  // JWT 토큰이 올바르지 않으면 예외를 처리를한다
                 jwtExceptionHandler(response, "Token Error", HttpStatus.UNAUTHORIZED.value());
+                //만료시 재발급
+
+                //
                 return;
             }
             Authentication authentication = tokenProvider.getAuthentication(ACToken);

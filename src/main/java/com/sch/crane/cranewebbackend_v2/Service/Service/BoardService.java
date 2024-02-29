@@ -15,9 +15,12 @@ import com.sch.crane.cranewebbackend_v2.Domain.Entity.Board;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.Comment;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardCategory;
+import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.AbstractAuditable_;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,14 +41,32 @@ public class BoardService {
 
     @Transactional
     public Board createBoard(BoardRequestDto boardRequestDto) {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userEmail = ((org.springframework.security.core.userdetails.User)principal).getUsername();
+
+        Optional<User> optionalUser = userRepository.findByUserEmail(userEmail);
+        if(optionalUser.isEmpty()){
+            throw new BadCredentialsException("사용자 인증 에러");
+        }
+
         Board board = Board.builder()
                 .boardTitle(boardRequestDto.getBoardTitle())
                 .boardCategory(boardRequestDto.getBoardCategory())
                 .boardContents(boardRequestDto.getBoardContents())
+                .boardView(0)
+                .user(optionalUser.get())
                 .build();
 
         return boardRepository.save(board);
     } // userName 추가
+
+    @Transactional
+    public void BoardTest(){
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userEmail = ((org.springframework.security.core.userdetails.User)principal).getUsername();
+        System.out.println(principal);
+        System.out.println(userEmail);
+    }
 
     @Transactional
     public Board editBoard(Long boardId, BoardRequestDto boardRequestDto) {

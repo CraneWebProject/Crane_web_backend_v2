@@ -24,6 +24,11 @@ import java.util.List;
 public class BoardController {
     private final BoardService boardService;
 
+    @GetMapping("/test")
+    public void testboard(){
+        boardService.BoardTest();
+    }
+
     @PostMapping("/createBoard")
     public ResponseEntity<Board> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
         return ResponseEntity.ok(boardService.createBoard(boardRequestDto));
