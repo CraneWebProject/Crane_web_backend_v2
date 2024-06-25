@@ -14,12 +14,16 @@ import com.sch.crane.cranewebbackend_v2.Service.Exception.UserNameNotFoundExcept
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.nio.charset.Charset;
 
 @RestController
 @Slf4j
@@ -39,11 +43,14 @@ public class UserController {
         JoinResponse response;
         //Email 중복시 실패 반환
         if(userService.isEmailExist(joinDto.getUserEmail())){
+            HttpHeaders headers= new HttpHeaders();
+            headers.setContentType(new MediaType("application", "json", Charset.forName("UTF-8")));
             response = JoinResponse.builder()
                     .code(StatusCode.DATA_CONFLICT)
                     .message(ResponseMessage.EMAIL_EXISTED)
                     .data(false)
                     .build();
+            return new ResponseEntity<>(response, headers, HttpStatus.BAD_REQUEST);
         }else { //미 중복시 정상 가입 성공
             UserResponseDto userResponseDto = userService.join(joinDto);
             response = JoinResponse.builder()
