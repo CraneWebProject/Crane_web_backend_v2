@@ -48,23 +48,24 @@ public class SecurityConfig {
                 .requestMatchers("/favicon.ico");
     }
 
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("https://localhost:5173"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowCredentials(true);
+        configuration.setAllowedHeaders(Arrays.asList("x-requested-with", "X-Auth-Token", "Content-Type", "x-access-token", "Authorization"));
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception  {
         httpSecurity
-                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
-                   @Override
-                   public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
-                       CorsConfiguration config = new CorsConfiguration();
-                       config.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
-                       config.setAllowedMethods(Collections.singletonList("*"));
-                       config.setAllowCredentials(true);
-                       config.setAllowedHeaders(Collections.singletonList("*"));
-                       config.setMaxAge(3600L);
-                       return config;
-                   }
-                }))
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .exceptionHandling((exceptionHandling) -> exceptionHandling

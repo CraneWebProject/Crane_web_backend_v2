@@ -31,10 +31,11 @@ public class CorsFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
         logger.info("Reached the filter");
         HttpServletResponse response =(HttpServletResponse) res;
-        response.setHeader("Access-Control-Allow-Origin", "*"); // TODO: devi says, in production environments, face this * inwards
+        response.setHeader("Access-Control-Allow-Origin", "https://localhost:5173"); // TODO: devi says, in production environments, face this * inwards
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, OPTIONS, DELETE");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with, X-Auth-Token, Content-Type, x-access-token, Authorization");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
         logger.info("CORS headers were set");
         chain.doFilter(req,res);
 

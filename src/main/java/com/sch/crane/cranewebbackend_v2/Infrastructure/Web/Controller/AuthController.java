@@ -12,7 +12,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -28,7 +30,7 @@ import java.util.Optional;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-//@CrossOrigin(origins = {"http://localhost:5173"})
+@CrossOrigin(origins = "https://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/auth")
 public class AuthController {
     public static final String AUTHORIZATION_HEADER = "Authorization";
@@ -82,7 +84,7 @@ public class AuthController {
 //        String refreshToken = tokenProvider.createToken(user.getUserEmail(), userRoleList, REFRESH_TOKEN_TIME);
 //        redisUtil.setValues(refreshToken, user.getUserEmail());
 
-
+//Refresh Token 관련 설정
 //        Cookie responseCookie = new Cookie("refreshToken", refreshToken);
 //        responseCookie.setMaxAge(7*24*60*60);
 //        responseCookie.setHttpOnly(true);
@@ -90,12 +92,25 @@ public class AuthController {
 //        responseCookie.setPath("/");
 //        response.addCookie(responseCookie);
 
-        Cookie accessCookie = new Cookie("accessToken", accessToken);
-        accessCookie.setMaxAge(5*60);
-        accessCookie.setHttpOnly(true);
-        accessCookie.setSecure(true);
-        accessCookie.setPath("/");
-        response.addCookie(accessCookie);
+//        Cookie accessCookie = new Cookie("accessToken", accessToken);
+//        accessCookie.setMaxAge(5*60);
+//        accessCookie.setHttpOnly(true);
+//        //TODO:secure은 https에서만 작동함.
+//        accessCookie.setSecure(false);
+//        accessCookie.setDomain("localhost");
+//        accessCookie.setPath("/");
+
+        ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
+                        .httpOnly(true)
+                        .maxAge(300)
+                        .path("/")
+                        .sameSite("None")
+                        .secure(true)
+                        .build();
+
+
+
+//        response.addCookie(cookie);
 
 
         loginResponse = LoginResponse.builder()
@@ -103,7 +118,9 @@ public class AuthController {
                 .message(ResponseMessage.LOGIN_SUCCESS)
                 .build();
 
-        return ResponseEntity.ok(loginResponse);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(loginResponse);
 
 
     }

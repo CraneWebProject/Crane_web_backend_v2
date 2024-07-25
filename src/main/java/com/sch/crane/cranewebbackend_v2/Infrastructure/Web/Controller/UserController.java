@@ -3,8 +3,10 @@ package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.EditMemberDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.JoinDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
+import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.GeneralResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.JoinResponse;
+import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.JwtUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
@@ -12,6 +14,8 @@ import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.Sta
 import com.sch.crane.cranewebbackend_v2.Service.Exception.ErrorResponse;
 import com.sch.crane.cranewebbackend_v2.Service.Exception.UserNameNotFoundException;
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -24,14 +28,17 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.Charset;
+import java.util.Optional;
 
 @RestController
 @Slf4j
 @RequiredArgsConstructor
+@CrossOrigin(origins = "https://localhost:5173", allowCredentials = "true")
 @RequestMapping("/api/users")
 public class UserController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
+    private final JwtUtil jwtUtil;
 //    private final RedisUtil redisUtil;
     private final Long expireTimeMs = 300000l;
     private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
@@ -79,6 +86,38 @@ public class UserController {
                 .message(ResponseMessage.EMAIL_OK)
                 .data(true)
                 .build();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    //로그인 후 유저 정보 반환
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @GetMapping("/userinfo")
+    public ResponseEntity<?> userInfo(@CookieValue(value = "accessToken") Cookie ACToken){
+        UserResponseDto userResponseDto;
+        String userEmail = jwtUtil.extractUseremail(ACToken.getValue());
+
+        Optional<User> optionalUser =  userService.findUserByEmail(userEmail);
+        if(optionalUser.isEmpty()){
+            ErrorResponse response = ErrorResponse.builder()
+                    .status(StatusCode.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND_USER)
+                    .build();
+
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        User user = optionalUser.get();
+        userResponseDto = UserResponseDto.builder()
+                .userName(user.getUserName())
+                .userEmail(user.getUserEmail())
+                .session(user.getUserSession())
+                .build();
+
+        GeneralResponse response = GeneralResponse.builder()
+                .code(StatusCode.OK)
+                .message(ResponseMessage.CHECK_OK)
+                .data(userResponseDto)
+                .build();
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

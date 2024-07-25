@@ -3,7 +3,9 @@ package com.sch.crane.cranewebbackend_v2.Infrastructure.Response;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
 import lombok.Builder;
+import lombok.Data;
 
+@Data
 public class GeneralResponse {
     private int code;
     private String message;

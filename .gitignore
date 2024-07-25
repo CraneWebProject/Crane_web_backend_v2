@@ -38,3 +38,4 @@ out/
 
 **/resources/application.yml
 compose.yaml
+*.p12
