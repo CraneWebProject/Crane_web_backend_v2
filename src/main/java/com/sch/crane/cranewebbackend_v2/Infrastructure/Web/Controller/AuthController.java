@@ -16,6 +16,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
@@ -92,17 +93,9 @@ public class AuthController {
 //        responseCookie.setPath("/");
 //        response.addCookie(responseCookie);
 
-//        Cookie accessCookie = new Cookie("accessToken", accessToken);
-//        accessCookie.setMaxAge(5*60);
-//        accessCookie.setHttpOnly(true);
-//        //TODO:secure은 https에서만 작동함.
-//        accessCookie.setSecure(false);
-//        accessCookie.setDomain("localhost");
-//        accessCookie.setPath("/");
-
         ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
                         .httpOnly(true)
-                        .maxAge(300)
+                        .maxAge(60*60*24)
                         .path("/")
                         .sameSite("None")
                         .secure(true)
@@ -123,5 +116,42 @@ public class AuthController {
                 .body(loginResponse);
 
 
+    }
+
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PostMapping("/logout")
+    public ResponseEntity<LoginResponse> login(HttpServletResponse response){
+        LoginDto loginDto = LoginDto.builder().build();
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userEmail = ((org.springframework.security.core.userdetails.User)principal).getUsername();
+
+//        Optional<User> optionalUser = userservice.findUserByEmail(userEmail);
+//        if(optionalUser.isPresent()){
+//            User user = optionalUser.get();
+//            loginDto.setUserEmail(user.getUserEmail());
+//            loginDto.setUserPassword(user.getUserPassword());
+//        }else {
+//            loginResponse = LoginResponse.builder()
+//                    .code(StatusCode.UNAUTHORIZED)
+//                    .message(ResponseMessage.LOGIN_FAILED)
+//                    .build();
+//            return new ResponseEntity<>(loginResponse, HttpStatus.BAD_REQUEST);
+//        }
+
+//        UsernamePasswordAuthenticationToken authenticationToken =
+//                new UsernamePasswordAuthenticationToken(loginDto.getUserEmail(), loginDto.getUserPassword());
+//        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+//        String accessToken = tokenProvider.createToken(authentication);
+        ResponseCookie cookie = ResponseCookie.from("accessToken", null)
+                .httpOnly(true)
+                .maxAge(0)
+                .path("/")
+                .sameSite("None")
+                .secure(true)
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(loginResponse);
     }
 }

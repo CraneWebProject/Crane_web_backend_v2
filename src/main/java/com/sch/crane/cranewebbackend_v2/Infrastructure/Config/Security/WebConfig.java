@@ -17,7 +17,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("x-requested-with", "X-Auth-Token", "Content-Type", "x-access-token", "Authorization")
                 .allowCredentials(true)
-                .maxAge(3600);
+                .maxAge(60*60*24);
     }
 
 //    @Bean
