@@ -11,9 +11,11 @@ import com.sch.crane.cranewebbackend_v2.Domain.Entity.Board;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.Comment;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardCategory;
 import com.sch.crane.cranewebbackend_v2.Service.Service.BoardService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,11 +26,12 @@ import java.util.List;
 public class BoardController {
     private final BoardService boardService;
 
-    @GetMapping("/test")
-    public void testboard(){
-        boardService.BoardTest();
-    }
+//    @GetMapping("/test")
+//    public void testboard(){
+//        boardService.BoardTest();
+//    }
 
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @PostMapping("/createBoard")
     public ResponseEntity<Board> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
         return ResponseEntity.ok(boardService.createBoard(boardRequestDto));
@@ -40,10 +43,13 @@ public class BoardController {
         return ResponseEntity.ok(boardService.readBoardById(boardId));
     } // 순서 괜찮은지
 
+    //axios 요청에서는 get에 body를 담아 보낼 수 없음.
+    //따라서 header의 param에 정보를 담아오고 읽어오는 방식으로 수정.
     @GetMapping("/list")
     public ResponseEntity<List<BoardResponseDto>>
-                getBoardByCategory(@RequestBody BoardRequestDto boardRequestDto) {
-        BoardCategory boardCategory =  boardRequestDto.getBoardCategory();
+                getBoardByCategory(HttpServletRequest request) {
+        String stringCategory = request.getParameter("BoardCategory");
+        BoardCategory boardCategory =  BoardCategory.valueOf(stringCategory);
         return ResponseEntity.ok(boardService.readBoardByCategory(boardCategory));
     }
 

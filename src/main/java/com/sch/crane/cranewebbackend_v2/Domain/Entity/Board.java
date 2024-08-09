@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-
 public class Board extends BaseTimeEntity {
 
     @Id
@@ -26,6 +25,7 @@ public class Board extends BaseTimeEntity {
 
     private Integer boardView;
 
+    @Enumerated(EnumType.STRING)
     private BoardCategory boardCategory;
 
     private BoardState boardState;

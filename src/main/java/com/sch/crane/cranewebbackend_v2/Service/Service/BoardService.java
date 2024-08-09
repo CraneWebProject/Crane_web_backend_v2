@@ -15,6 +15,7 @@ import com.sch.crane.cranewebbackend_v2.Domain.Entity.Board;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.Comment;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardCategory;
+import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardState;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
@@ -55,18 +56,19 @@ public class BoardService {
                 .boardContents(boardRequestDto.getBoardContents())
                 .boardView(0)
                 .user(optionalUser.get())
+                .boardState(BoardState.DEFAULT)
                 .build();
 
         return boardRepository.save(board);
     } // userName 추가
 
-    @Transactional
-    public void BoardTest(){
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userEmail = ((org.springframework.security.core.userdetails.User)principal).getUsername();
-        System.out.println(principal);
-        System.out.println(userEmail);
-    }
+//    @Transactional
+//    public void BoardTest(){
+//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        String userEmail = ((org.springframework.security.core.userdetails.User)principal).getUsername();
+//        System.out.println(principal);
+//        System.out.println(userEmail);
+//    }
 
     @Transactional
     public Board editBoard(Long boardId, BoardRequestDto boardRequestDto) {
@@ -131,6 +133,7 @@ public class BoardService {
         {
             BoardResponseDto boardResponseDto = BoardResponseDto.builder()
                     .bid(b.getBid())
+                    .boardTitle(b.getBoardTitle())
                     .boardCategory(b.getBoardCategory())
                     .boardView(b.getBoardView())
                     .boardContents(b.getBoardContents())
