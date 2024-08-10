@@ -21,6 +21,8 @@ public class Board extends BaseTimeEntity {
 
     private String boardTitle;
 
+
+    @Column(columnDefinition = "LONGTEXT")
     private String boardContents;
 
     private Integer boardView;

@@ -4,6 +4,8 @@ import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardCategory;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class BoardResponseDto {
     private Long bid;
@@ -24,11 +26,11 @@ public class BoardResponseDto {
 
     private String thumbNaile;
 
-
+    private LocalDateTime createdDate;
 
     @Builder
     public BoardResponseDto(Long bid, String boardTitle, String boardContents, Integer boardView,
-                            BoardCategory boardCategory, Long uid, String userName, String userPic, String thumbNaile){
+                            BoardCategory boardCategory, Long uid, String userName, String userPic, String thumbNaile , LocalDateTime createdDate){
         this.bid = bid;
         this.boardTitle = boardTitle;
         this.boardContents = boardContents;
@@ -38,5 +40,6 @@ public class BoardResponseDto {
         this.userName = userName;
         this.userPic = userPic;
         this.thumbNaile = thumbNaile;
+        this.createdDate = createdDate;
     }
 }

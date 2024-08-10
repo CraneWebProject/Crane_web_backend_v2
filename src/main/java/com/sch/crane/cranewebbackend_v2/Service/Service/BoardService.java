@@ -117,6 +117,7 @@ public class BoardService {
                 .boardCategory(board.getBoardCategory())
                 .uid(board.getUser().getUid())
                 .userName(board.getUser().getUserName())
+                .createdDate(board.getCreatedDate())
                 .build();
         return boardResponseDto;
     }
@@ -139,6 +140,7 @@ public class BoardService {
                     .boardContents(b.getBoardContents())
                     .uid(b.getUser().getUid())
                     .userName(b.getUser().getUserName())
+                    .createdDate(b.getCreatedDate())
                     .build();
 
             boardResponseDtoList.add(boardResponseDto);
@@ -160,6 +162,7 @@ public class BoardService {
                     .boardView(b.getBoardView())
                     .boardContents(b.getBoardContents())
                     .userName(b.getUser().getUserName())
+                    .createdDate(b.getCreatedDate())
                     .build();
             boardResponseDtoList.add(boardResponseDto);
         }
