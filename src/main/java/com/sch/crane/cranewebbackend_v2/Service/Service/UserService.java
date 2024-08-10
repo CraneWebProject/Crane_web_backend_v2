@@ -47,6 +47,7 @@ public class UserService {
                 .userStdId(joinDto.getUserStdId())
                 .userPhNum(joinDto.getUserPhNum())
                 .userBirth(joinDto.getUserBirth())
+                .userTh(joinDto.getUserTh())
                 .userSession(joinDto.getUserSession())
                 .userRole(UserRole.ROLE_STAN_BY)
                 .authorities(Collections.singleton(authority))
@@ -61,17 +62,6 @@ public class UserService {
                 .session(user.getUserSession())
                 .build();
     }
-
-//    @Transactional
-//    public User login(LoginDto loginDto){
-//        User user = userRepository.findByUserEmail(loginDto.getUserEmail()).orElseThrow(
-//                () -> new IllegalArgumentException("아이디가 일치 하지 않습니다"));
-//        if(!passwordEncoder.matches(loginDto.getUserPassword(),user.getPassword())){
-//            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다");
-//        }
-//        return user;
-//
-//    }
 
     @Transactional
     public Optional<User> findUserByEmail(String email){

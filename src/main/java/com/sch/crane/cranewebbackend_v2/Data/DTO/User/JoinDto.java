@@ -28,10 +28,11 @@ public class JoinDto {
 
     private UserSession userSession;
 
+    private Integer userTh;
 
     @Builder
     public JoinDto(String userEmail,String userPassword,String userName,
-                   String userDept, String userStdId,String userPhNum,LocalDate userBirth,UserSession userSession){
+                   String userDept, String userStdId,String userPhNum,LocalDate userBirth,UserSession userSession, Integer userTh){
 
         this.userEmail = userEmail;
         this.userPassword = userPassword;
@@ -41,5 +42,6 @@ public class JoinDto {
         this.userPhNum = userPhNum;
         this.userBirth = userBirth;
         this.userSession = userSession;
+        this.userTh = userTh;
     }
 }

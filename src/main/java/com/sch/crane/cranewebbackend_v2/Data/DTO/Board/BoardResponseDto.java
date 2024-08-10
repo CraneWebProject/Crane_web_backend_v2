@@ -20,13 +20,15 @@ public class BoardResponseDto {
 
     private String userName;
 
-//    private String userPic;
+    private String userPic;
+
+    private String thumbNaile;
 
 
 
     @Builder
     public BoardResponseDto(Long bid, String boardTitle, String boardContents, Integer boardView,
-                            BoardCategory boardCategory, Long uid, String userName){
+                            BoardCategory boardCategory, Long uid, String userName, String userPic, String thumbNaile){
         this.bid = bid;
         this.boardTitle = boardTitle;
         this.boardContents = boardContents;
@@ -34,6 +36,7 @@ public class BoardResponseDto {
         this.boardCategory = boardCategory;
         this.uid = uid;
         this.userName = userName;
-//        this.userPic = userPic;
+        this.userPic = userPic;
+        this.thumbNaile = thumbNaile;
     }
 }

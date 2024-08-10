@@ -38,6 +38,10 @@ public class User {
 
     private LocalDate userBirth;
 
+    private Integer userTh;
+
+    private String userProfilePic;
+
     @Enumerated(EnumType.STRING)
     private UserSession userSession;
 
@@ -52,8 +56,6 @@ public class User {
     )
     private Collection<Authority> authorities;
 
-    //TODO: 기수 추가
-    //TODO: 프로필사진 추가
 
     public void updateUserInfo(String userDept, String userPhNum){
         this.userDept = userDept;
@@ -74,11 +76,12 @@ public class User {
         this.userName = "탈퇴한 사용자";
         this.userPhNum = "01000000000";
         this.userRole = UserRole.ROLE_STAN_BY;
+        this.userProfilePic = ""; //TODO: 탈퇴시 프로필 사진 지우도록 수정
     }
 
     @Builder
     public User(Long uid,String userEmail,String userPassword,String userName,String userDept,String userStdId,
-                String userPhNum,LocalDate userBirth,UserSession userSession, UserRole userRole, Collection<Authority> authorities ) {
+                String userPhNum,LocalDate userBirth, Integer userTh, String userProfilePic, UserSession userSession, UserRole userRole, Collection<Authority> authorities ) {
         this.uid = uid;
 
         this.userEmail = userEmail;
@@ -94,6 +97,10 @@ public class User {
         this.userPhNum = userPhNum;
 
         this.userBirth = userBirth;
+
+        this.userTh = userTh;
+
+        this.userProfilePic = userProfilePic;
 
         this.userSession = userSession;
 
