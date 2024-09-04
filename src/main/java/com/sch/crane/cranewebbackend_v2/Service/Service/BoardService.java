@@ -2,10 +2,13 @@ package com.sch.crane.cranewebbackend_v2.Service.Service;
 
 import com.sch.crane.cranewebbackend_v2.Data.DTO.AttachmentFile.AttachmentFileRequestDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.AttachmentFile.AttachmentFileResponseDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardPageDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardPageListDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardRequestDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardResponseDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Comment.CommentRequestDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Comment.CommentResponseDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
 import com.sch.crane.cranewebbackend_v2.Data.Repository.AttachmentFile.AttachmentRepository;
 import com.sch.crane.cranewebbackend_v2.Data.Repository.Board.BoardRepository;
 import com.sch.crane.cranewebbackend_v2.Data.Repository.Comment.CommentRepository;
@@ -19,6 +22,10 @@ import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardState;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.AbstractAuditable_;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -107,7 +114,7 @@ public class BoardService {
     @Transactional
     public BoardResponseDto readBoardById(Long boardId) {
         Board board = boardRepository.findById(boardId).orElseThrow(
-                ()-> new NoSuchElementException("유저가 존재하지 않습니다.")
+                ()-> new NoSuchElementException("게시물이 존재하지 않습니다.")
         );
         BoardResponseDto boardResponseDto = BoardResponseDto.builder()
                 .bid(boardId)
@@ -115,37 +122,44 @@ public class BoardService {
                 .boardContents(board.getBoardContents())
                 .boardView(board.getBoardView())
                 .boardCategory(board.getBoardCategory())
-                .uid(board.getUser().getUid())
-                .userName(board.getUser().getUserName())
+                .userResponseDto(new UserResponseDto(board.getUser()))
                 .createdDate(board.getCreatedDate())
                 .build();
         return boardResponseDto;
     }
 
-    @Transactional
-    public List<BoardResponseDto> readBoardByCategory(BoardCategory boardCategory) {
-        List<Board> boardList = boardRepository.findBoardByCategory(boardCategory);
-        if(boardList.isEmpty())
+    @Transactional(readOnly = true)
+    public BoardPageListDto readBoardByCategory(BoardPageDto boardPageDto) {
+        Sort sort = Sort.by(Sort.Direction.fromString(boardPageDto.getSort()), "id");
+        Pageable pageable = PageRequest.of(boardPageDto.getPage(), boardPageDto.getSize(), sort);
+
+        Page<Board> boardPage = boardRepository.findBoardByCategory(boardPageDto.getBoardCategory(), pageable);
+
+//        List<Board> boardList = boardRepository.findBoardByCategory(boardCategory);
+        if(boardPage.isEmpty())
         {
             throw new NoSuchElementException("보드가 존재하지 않습니다");
         }
-        List<BoardResponseDto> boardResponseDtoList = new ArrayList<>();
-        for(Board b : boardList)
-        {
-            BoardResponseDto boardResponseDto = BoardResponseDto.builder()
-                    .bid(b.getBid())
-                    .boardTitle(b.getBoardTitle())
-                    .boardCategory(b.getBoardCategory())
-                    .boardView(b.getBoardView())
-                    .boardContents(b.getBoardContents())
-                    .uid(b.getUser().getUid())
-                    .userName(b.getUser().getUserName())
-                    .createdDate(b.getCreatedDate())
-                    .build();
+//        List<BoardResponseDto> boardResponseDtoList = new ArrayList<>();
+//        for(Board b : boardPage)
+//        {
+//            BoardResponseDto boardResponseDto = BoardResponseDto.builder()
+//                    .bid(b.getBid())
+//                    .boardTitle(b.getBoardTitle())
+//                    .boardCategory(b.getBoardCategory())
+//                    .boardView(b.getBoardView())
+//                    .boardContents(b.getBoardContents())
+//                    .uid(b.getUser().getUid())
+//                    .userName(b.getUser().getUserName())
+//                    .createdDate(b.getCreatedDate())
+//                    .build();
+//
+//            boardResponseDtoList.add(boardResponseDto);
+//        }
+//        return boardResponseDtoList;
+        BoardPageListDto dto = new BoardPageListDto(boardPage);
 
-            boardResponseDtoList.add(boardResponseDto);
-        }
-        return boardResponseDtoList;
+        return dto;
     }
 
     @Transactional
@@ -161,7 +175,7 @@ public class BoardService {
                     .boardTitle(b.getBoardTitle())
                     .boardView(b.getBoardView())
                     .boardContents(b.getBoardContents())
-                    .userName(b.getUser().getUserName())
+                    .userResponseDto(new UserResponseDto(user))
                     .createdDate(b.getCreatedDate())
                     .build();
             boardResponseDtoList.add(boardResponseDto);

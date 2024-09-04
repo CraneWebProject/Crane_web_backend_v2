@@ -2,6 +2,8 @@ package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller;
 
 import com.sch.crane.cranewebbackend_v2.Data.DTO.AttachmentFile.AttachmentFileRequestDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.AttachmentFile.AttachmentFileResponseDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardPageDto;
+import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardPageListDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardRequestDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Board.BoardResponseDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Comment.CommentRequestDto;
@@ -14,12 +16,12 @@ import com.sch.crane.cranewebbackend_v2.Service.Service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/board")
@@ -47,11 +49,30 @@ public class BoardController {
     //axios 요청에서는 get에 body를 담아 보낼 수 없음.
     //따라서 header의 param에 정보를 담아오고 읽어오는 방식으로 수정.
     @GetMapping("/list")
-    public ResponseEntity<List<BoardResponseDto>>
-                getBoardByCategory(HttpServletRequest request) {
-        String stringCategory = request.getParameter("BoardCategory");
-        BoardCategory boardCategory =  BoardCategory.valueOf(stringCategory);
-        return ResponseEntity.ok(boardService.readBoardByCategory(boardCategory));
+    public ResponseEntity<BoardPageListDto> getBoardByCategory(
+            @RequestParam BoardCategory category,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "asc") String sort
+    ) {
+//        String stringCategory = request.getParameter("BoardCategory");
+//        int page = Integer.parseInt(request.getParameter("page").toString());
+
+        if(category == BoardCategory.GALLERY){
+            size = 12;
+        }else{
+            System.out.println(category);
+        }
+
+        BoardPageDto dto = BoardPageDto.builder()
+                .page(page)
+                .size(size)
+                .boardCategory(category)
+                .sort(sort)
+                .build();
+
+
+        return ResponseEntity.ok(boardService.readBoardByCategory(dto));
     }
 
     @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")

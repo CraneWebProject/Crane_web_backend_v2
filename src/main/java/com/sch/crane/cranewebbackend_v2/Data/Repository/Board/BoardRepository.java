@@ -4,6 +4,8 @@ import com.sch.crane.cranewebbackend_v2.Domain.Entity.Board;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardCategory;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +20,7 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     Optional<Board> findById(@Param("bid") Long bid);
 
     @Query("select b from Board b where b.boardCategory =:boardCategory")
-    List<Board> findBoardByCategory(@Param("boardCategory") BoardCategory boardCategory);
+    Page<Board> findBoardByCategory(@Param("boardCategory") BoardCategory boardCategory, Pageable pageable);
 
     @Query("select b from Board b where b.user =: user")
     List<Board> findBoardByUser(@Param("user") User user);
