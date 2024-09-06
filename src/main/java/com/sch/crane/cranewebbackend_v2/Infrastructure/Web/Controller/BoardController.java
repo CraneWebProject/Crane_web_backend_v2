@@ -53,7 +53,7 @@ public class BoardController {
             @RequestParam BoardCategory category,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "asc") String sort
+            @RequestParam(defaultValue = "desc") String sort
     ) {
 //        String stringCategory = request.getParameter("BoardCategory");
 //        int page = Integer.parseInt(request.getParameter("page").toString());
