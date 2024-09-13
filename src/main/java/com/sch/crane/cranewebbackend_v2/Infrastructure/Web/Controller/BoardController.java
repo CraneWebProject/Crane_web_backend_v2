@@ -46,7 +46,7 @@ public class BoardController {
         return ResponseEntity.ok(boardService.readBoardById(boardId));
     } // 순서 괜찮은지
 
-    //axios 요청에서는 get에 body를 담아 보낼 수 없음.
+    //get에 body를 담아 보낼 수 없음.
     //따라서 header의 param에 정보를 담아오고 읽어오는 방식으로 수정.
     @GetMapping("/list")
     public ResponseEntity<BoardPageListDto> getBoardByCategory(
@@ -60,8 +60,6 @@ public class BoardController {
 
         if(category == BoardCategory.GALLERY){
             size = 12;
-        }else{
-            System.out.println(category);
         }
 
         BoardPageDto dto = BoardPageDto.builder()

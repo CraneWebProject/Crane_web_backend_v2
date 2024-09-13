@@ -136,10 +136,13 @@ public class BoardService {
         Page<Board> boardPage = boardRepository.findBoardByCategory(boardPageDto.getBoardCategory(), pageable);
 
 //        List<Board> boardList = boardRepository.findBoardByCategory(boardCategory);
+        //빈 보드에 예외 리턴시 500에러를 리턴해버림.
         if(boardPage.isEmpty())
         {
-            throw new NoSuchElementException("보드가 존재하지 않습니다");
+//            throw new NoSuchElementException("Empty");
+
         }
+
 //        List<BoardResponseDto> boardResponseDtoList = new ArrayList<>();
 //        for(Board b : boardPage)
 //        {
