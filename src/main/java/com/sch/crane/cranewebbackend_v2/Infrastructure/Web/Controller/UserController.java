@@ -93,8 +93,10 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @GetMapping("/userinfo")
     public ResponseEntity<?> userInfo(@CookieValue(value = "accessToken") Cookie ACToken){
+//        System.out.println(ACToken.getValue());
         UserResponseDto userResponseDto;
         String userEmail = jwtUtil.extractUseremail(ACToken.getValue());
+//        System.out.println(userEmail);
 
         Optional<User> optionalUser =  userService.findUserByEmail(userEmail);
         if(optionalUser.isEmpty()){
@@ -110,6 +112,7 @@ public class UserController {
                 .userName(user.getUserName())
                 .userEmail(user.getUserEmail())
                 .session(user.getUserSession())
+                .userRole(user.getUserRole())
                 .build();
 
         GeneralResponse response = GeneralResponse.builder()

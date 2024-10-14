@@ -35,7 +35,7 @@ public class BoardController {
 
     @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @PostMapping("/createBoard")
-    public ResponseEntity<Board> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
+    public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
         return ResponseEntity.ok(boardService.createBoard(boardRequestDto));
     }
 
@@ -89,7 +89,7 @@ public class BoardController {
 
     @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
     @PutMapping("/updateBoard/{boardId}")
-    public ResponseEntity<Board> updateBoard(@PathVariable("boardId") Long boardId, @RequestBody BoardRequestDto boardRequestDto) {
+    public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable("boardId") Long boardId, @RequestBody BoardRequestDto boardRequestDto) {
         return ResponseEntity.ok(boardService.editBoard(boardId, boardRequestDto));
     }
 

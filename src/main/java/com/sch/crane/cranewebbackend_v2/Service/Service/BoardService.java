@@ -22,6 +22,7 @@ import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardState;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +49,7 @@ public class BoardService {
     private final AttachmentRepository attachmentRepository;
 
     @Transactional
-    public Board createBoard(BoardRequestDto boardRequestDto) {
+    public BoardResponseDto createBoard(BoardRequestDto boardRequestDto) {
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String userEmail = ((org.springframework.security.core.userdetails.User)principal).getUsername();
 
@@ -65,8 +66,11 @@ public class BoardService {
                 .user(optionalUser.get())
                 .boardState(BoardState.DEFAULT)
                 .build();
+        boardRepository.save(board);
 
-        return boardRepository.save(board);
+        BoardResponseDto boardResponseDto = new BoardResponseDto(board);
+
+        return boardResponseDto;
     } // userName 추가
 
 //    @Transactional
@@ -78,12 +82,20 @@ public class BoardService {
 //    }
 
     @Transactional
-    public Board editBoard(Long boardId, BoardRequestDto boardRequestDto) {
+    public BoardResponseDto editBoard(Long boardId, BoardRequestDto boardRequestDto) {
         Board board = boardRepository.findById(boardId).orElseThrow(
                 () -> new NoSuchElementException("보드가 존재하지 않습니다."));
 
         board.updateBoard(boardRequestDto.getBoardTitle(), boardRequestDto.getBoardContents(), boardRequestDto.getBoardCategory());
-        return boardRepository.save(board);
+        BoardResponseDto boardResponseDto = BoardResponseDto.builder()
+                .boardTitle(board.getBoardTitle())
+                .boardContents(board.getBoardContents())
+                .boardCategory(board.getBoardCategory())
+                .build();
+
+        boardRepository.save(board);
+
+        return boardResponseDto;
     }
 
     @Transactional

@@ -8,5 +8,4 @@ public enum BoardCategory {
     ADMIN, //임원 전용 게시판
     PERFORM, //공연
     INSTRUMENT //악기
-    
 }

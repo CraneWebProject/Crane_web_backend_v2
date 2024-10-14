@@ -71,13 +71,12 @@ public class AuthController {
         }
 
         List<String> userRoleList = new ArrayList<>();
-
         if(user.getUserRole() == null){
             userRoleList.add(UserRole.ROLE_STAN_BY.toString());
         }else {
             userRoleList.add(user.getUserRole().toString());//userRole이 List<String>으로 요구되어 해당 방식으로 변환
-
         }
+
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginDto.getUserEmail(), loginDto.getUserPassword());
         Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
@@ -118,7 +117,7 @@ public class AuthController {
 
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED') and hasRole('STAN_BY')")
     @PostMapping("/logout")
     public ResponseEntity<LoginResponse> login(HttpServletResponse response){
         LoginDto loginDto = LoginDto.builder().build();

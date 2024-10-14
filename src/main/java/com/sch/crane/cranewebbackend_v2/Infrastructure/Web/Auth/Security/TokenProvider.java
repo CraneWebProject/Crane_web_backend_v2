@@ -64,6 +64,8 @@ public class TokenProvider implements InitializingBean {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
+        System.out.println("권한: " + authorities);
+
         long now = (new Date()).getTime();
         Date validity = new Date(now + ACCESS_EXPIRATION_TIME);
 
