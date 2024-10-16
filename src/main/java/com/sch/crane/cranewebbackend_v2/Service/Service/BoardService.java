@@ -182,7 +182,7 @@ public class BoardService {
         User user = userRepository.findById(userId).orElseThrow(
                 ()-> new NoSuchElementException("유저가 존재하지 않습니다.")
         );
-        List<Board> boardList = boardRepository.findBoardByUser(user);
+        List<Board> boardList = boardRepository.findBoardByUserUid(user.getUid());
         List<BoardResponseDto> boardResponseDtoList = new ArrayList<>();
         for(Board b : boardList)
         {

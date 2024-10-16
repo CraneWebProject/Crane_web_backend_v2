@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,12 +20,13 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
     @Query("select b from Board b where b.bid = :bid")
     Optional<Board> findById(@Param("bid") Long bid);
 
-    @Query("select b from Board b where b.boardCategory =:boardCategory")
+    @Query("select b from Board b where b.boardCategory = :boardCategory")
     Page<Board> findBoardByCategory(@Param("boardCategory") BoardCategory boardCategory, Pageable pageable);
 
-    @Query("select b from Board b where b.user =: user")
-    List<Board> findBoardByUser(@Param("user") User user);
+    @Query("select b from Board b where b.user.uid = :uid")
+    List<Board> findBoardByUserUid(@Param("uid") Long uid);
 
+    @Transactional
     @Modifying
     @Query("update Board b set b.boardView = b.boardView +1 where b.bid = :bid")
     int increaseView(@Param("bid") Long bid);

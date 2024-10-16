@@ -18,15 +18,25 @@ public class Reservation extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private LocalDateTime resStartTime;
 
+    @Column(nullable = false)
     private LocalDateTime resEndTime;
 
     private ReservationStatus reservationStatus;
 
+    @JoinColumn(name = "instId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Instrument instrument;
+
     @JoinColumn(name = "userId")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    @JoinColumn(name = "teamId")
+    @ManyToOne(fetch =FetchType.LAZY)
+    private Team team;
 
     public void updateReservation(LocalDateTime resStartTime, LocalDateTime resEndTime){
         this.resStartTime = resStartTime;

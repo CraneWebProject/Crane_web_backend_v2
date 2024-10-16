@@ -12,7 +12,6 @@ import com.sch.crane.cranewebbackend_v2.Data.DTO.User.UserResponseDto;
 import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Domain.Enums.UserSession;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.JoinResponse;
-import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Redis.RedisUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.TokenProvider;
 import com.sch.crane.cranewebbackend_v2.Service.Service.UserService;
 import com.sch.crane.cranewebbackend_v2.Util.JsonProvider;
