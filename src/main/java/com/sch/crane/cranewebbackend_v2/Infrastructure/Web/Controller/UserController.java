@@ -90,7 +90,7 @@ public class UserController {
     }
 
     //로그인 후 유저 정보 반환
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @GetMapping("/userinfo")
     public ResponseEntity<?> userInfo(@CookieValue(value = "accessToken") Cookie ACToken){
 //        System.out.println(ACToken.getValue());
@@ -113,6 +113,7 @@ public class UserController {
                 .userEmail(user.getUserEmail())
                 .session(user.getUserSession())
                 .userRole(user.getUserRole())
+                .uid(user.getUid())
                 .build();
 
         GeneralResponse response = GeneralResponse.builder()
@@ -125,13 +126,12 @@ public class UserController {
     }
 
     //유저 정보 수정
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PatchMapping("/updateUserInfo")
     public ResponseEntity<?> updateUserInfo(@RequestBody EditMemberDto editMemberDto){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         UserDetailsImpl userDetails = (UserDetailsImpl) principal;
         String userEmail = userDetails.getUserEmail();
-        log.info("UserEmail : " + userEmail);
 
         try{ //업데이트 시도
             userService.updateUserInfo(userEmail, editMemberDto);
@@ -154,7 +154,7 @@ public class UserController {
 
     //유저 권한 수정
     //사이트 관리자 및 임원만 가능
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     @PatchMapping("/updateUserRole")
     public ResponseEntity<?> updateUserRole(@RequestBody EditMemberDto editMemberDto){
         try{
@@ -177,7 +177,7 @@ public class UserController {
     }
 
     //유저 비밀번호 수정
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PatchMapping("/udateuserpassword")
     public ResponseEntity<?> updateUserPassword(@RequestBody EditMemberDto editMemberDto){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -213,7 +213,7 @@ public class UserController {
 
 
     //회원 탈퇴
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @DeleteMapping("/deleteuser")
     public ResponseEntity<?> deleteUser(@RequestBody EditMemberDto editMemberDto){
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();

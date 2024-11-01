@@ -12,49 +12,75 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Reservation extends BaseTimeEntity {
+public class Reservation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long rid;
+
+    private String resName;
 
     @Column(nullable = false)
     private LocalDateTime resStartTime;
 
-    @Column(nullable = false)
-    private LocalDateTime resEndTime;
-
+    @Enumerated(EnumType.STRING)
     private ReservationStatus reservationStatus;
 
-    @JoinColumn(name = "instId")
+    @Column(nullable = false)
+    private Boolean resPossible;
+
+    @JoinColumn(name = "iid")
     @ManyToOne(fetch = FetchType.LAZY)
     private Instrument instrument;
 
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "uid")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @JoinColumn(name = "teamId")
+    @JoinColumn(name = "tid")
     @ManyToOne(fetch =FetchType.LAZY)
     private Team team;
 
-    public void updateReservation(LocalDateTime resStartTime, LocalDateTime resEndTime){
-        this.resStartTime = resStartTime;
-        this.resEndTime = resEndTime;
+
+    public void updateReservation( String resName,
+                                   Boolean resPossible,
+                                   ReservationStatus reservationStatus,
+                                   User user,
+                                   Team team){
+        this.resName = resName;
+        this.resPossible = resPossible;
+        this.reservationStatus = reservationStatus;
+        this.user = user;
+        this.team = team;
     }
 
-    public void updateReservationStatus(ReservationStatus status){
-        this.reservationStatus = status;
+    public void cancelReservation(){
+        this.resName = null;
+        this.reservationStatus = null;
+        this.resPossible = true;
+        this.instrument = null;
+        this.user = null;
+        this.team = null;
+    }
+
+    public void deleteInst(){
+        this.instrument = null;
     }
 
     @Builder
-    public Reservation(LocalDateTime resStartTime, LocalDateTime resEndTime, ReservationStatus reservationStatus, User user){
+    public Reservation( String resName,
+                        LocalDateTime resStartTime,
+                        ReservationStatus reservationStatus,
+                        Boolean resPossible,
+                        User user,
+                        Team team,
+                        Instrument instrument){
+        this.resName = resName;
         this.resStartTime = resStartTime;
-
-        this.resEndTime = resEndTime;
-
         this.reservationStatus = reservationStatus;
-
+        this.resPossible = resPossible;
         this.user = user;
+        this.team = team;
+        this.instrument = instrument;
     }
 }

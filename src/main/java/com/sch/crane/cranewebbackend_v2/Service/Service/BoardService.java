@@ -22,15 +22,12 @@ import com.sch.crane.cranewebbackend_v2.Domain.Enums.BoardState;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
 import jakarta.persistence.EntityExistsException;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.AbstractAuditable_;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +37,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
-@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
@@ -107,11 +103,13 @@ public class BoardService {
         {
             commentRepository.deleteById(c.getCid());
         }
+
+        commentList = commentRepository.findByBId(boardId);
         if(!commentList.isEmpty())
         {
             throw new EntityExistsException("댓글이 모두 삭제되지 않았습니다");
         }
-        boardRepository.delete(board);
+
         List<AttachmentFile> attachmentFileList = attachmentRepository.findAttachmentFileByBoardId(boardId);
         for(AttachmentFile a : attachmentFileList)
         {
@@ -121,6 +119,8 @@ public class BoardService {
         {
             throw new EntityExistsException("첨부파일이 존재하지 않습니다.");
         }
+
+        boardRepository.delete(board);
     }
 
     @Transactional

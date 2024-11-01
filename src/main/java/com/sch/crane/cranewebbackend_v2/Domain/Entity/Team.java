@@ -22,10 +22,14 @@ public class Team {
 
     private String teamName;
 
-    @Builder
-    public Team(Long tid, TeamType teamType, String teamName){
 
-        this.tid = tid;
+    public void updateTeam(TeamType teamType, String teamName){
+        this.teamType = teamType;
+        this.teamName = teamName;
+    }
+    @Builder
+    public Team(TeamType teamType, String teamName){
+
 
         this.teamType = teamType;
 

@@ -19,16 +19,15 @@ public class UserDetailsImpl implements UserDetails {
     private final String userEmail;
 
     @Builder
-    public UserDetailsImpl(User user, String userEmail){
+    public UserDetailsImpl(User user){
         this.user = user;
-        this.userEmail =userEmail;
+        this.userEmail =user.getUserEmail();
     }
 
 
     public static UserDetailsImpl from (User user) {
         return UserDetailsImpl.builder()
                 .user(user)
-                .userEmail(user.getUserEmail())
                 .build();
     }
 
@@ -50,7 +49,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return user.getUserPassword();
     }
 
 

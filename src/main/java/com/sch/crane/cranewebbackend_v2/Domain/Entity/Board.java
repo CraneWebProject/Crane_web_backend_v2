@@ -30,6 +30,7 @@ public class Board extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private BoardCategory boardCategory;
 
+    @Enumerated(EnumType.STRING)
     private BoardState boardState;
 
     @JoinColumn(name = "userId")

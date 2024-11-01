@@ -6,13 +6,14 @@ import lombok.Data;
 
 @Data
 public class TeamRequestDto {
-
+    private Long tid;
     private TeamType teamType;
 
     private String teamName;
 
     @Builder
-    public TeamRequestDto(TeamType teamType, String teamName){
+    public TeamRequestDto(Long tid, TeamType teamType, String teamName){
+        this.tid = tid;
         this.teamType = teamType;
         this.teamName = teamName;
     }

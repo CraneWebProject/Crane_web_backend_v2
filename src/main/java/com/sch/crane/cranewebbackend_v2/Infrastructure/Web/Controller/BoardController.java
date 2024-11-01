@@ -33,13 +33,13 @@ public class BoardController {
 //        boardService.BoardTest();
 //    }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PostMapping("/createBoard")
     public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
         return ResponseEntity.ok(boardService.createBoard(boardRequestDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable Long boardId) {
         boardService.increaseBoardView(boardId);
@@ -73,34 +73,34 @@ public class BoardController {
         return ResponseEntity.ok(boardService.readBoardByCategory(dto));
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<BoardResponseDto>> getBoardByUser(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(boardService.readBoardByUser(userId));
     }
 
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @DeleteMapping("/deleteBoard/{boardId}")
-    public Long deleteBoard(@PathVariable("boardId") Long boardId) {
+    public ResponseEntity<?> deleteBoard(@PathVariable("boardId") Long boardId) {
         boardService.delBoard(boardId);
-        return boardId;
+        return ResponseEntity.ok(boardId);
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PutMapping("/updateBoard/{boardId}")
     public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable("boardId") Long boardId, @RequestBody BoardRequestDto boardRequestDto) {
         return ResponseEntity.ok(boardService.editBoard(boardId, boardRequestDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PostMapping("/createComment")
     public ResponseEntity<Comment>
                 createComment(@PathVariable Long boardId,@RequestBody CommentRequestDto commentRequestDto) {
         return ResponseEntity.ok(boardService.writeComment(boardId, commentRequestDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PutMapping("/updateComment/{commentId}")
     public ResponseEntity<Comment>
                 updateComment(@PathVariable("commentId")Long commentId, @RequestBody CommentRequestDto commentRequestDto) {
@@ -113,27 +113,27 @@ public class BoardController {
         return ResponseEntity.ok(boardService.readCommentByBoard(boardId));
     } // */
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @DeleteMapping("/deleteComment/{commentId}")
     public Long deleteComment(@PathVariable("commentId")Long commentId) {
         boardService.delComment(commentId);
         return commentId;
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PostMapping("/attachmentFile")
     public ResponseEntity<AttachmentFile> createAttachmentFile(@RequestBody Long boardId, AttachmentFileRequestDto attachmentFileRequestDto) {
         return ResponseEntity.ok(boardService.createAttachmentFile(boardId, attachmentFileRequestDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PutMapping("/editAttachmentFile/{attachmentFileId}")
     public ResponseEntity<AttachmentFile>
             updateAttachmentFile(@PathVariable("attachmentFileId") Long attachmentFileId, @RequestBody AttachmentFileRequestDto attachmentFileRequestDto) {
         return ResponseEntity.ok(boardService.editAttachmentFile(attachmentFileId, attachmentFileRequestDto));
     }
 
-    @PreAuthorize("hasRole('ADMIN') and hasRole('MANAGER') and hasRole('MEMBER') and hasRole('GRADUATED')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @DeleteMapping("/deleteAttachmentFile/{attachmentFileId}")
     public Long deleteAttachmentFile(@PathVariable("attachmentFileId") Long attachmentFileId) {
         boardService.deleteAttachmentFile(attachmentFileId);

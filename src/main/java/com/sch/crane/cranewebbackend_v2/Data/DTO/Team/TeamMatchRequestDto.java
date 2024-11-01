@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class TeamMatchRequestDto {
+    private Long tmid;
     private Long tid;
 
     private TeamMatchRole teamMatchRole;
@@ -13,7 +14,8 @@ public class TeamMatchRequestDto {
     private Long uid;
 
     @Builder
-    public TeamMatchRequestDto(Long tid, Long uid, TeamMatchRole teamMatchRole){
+    public TeamMatchRequestDto(Long tmid, Long tid, Long uid, TeamMatchRole teamMatchRole){
+        this.tmid = tmid;
         this.tid = tid;
         this.uid = uid;
         this.teamMatchRole = teamMatchRole;
