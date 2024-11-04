@@ -128,7 +128,7 @@ public class ReservationService {
     @Transactional
     public ReservationResponseDto createReservation(ReservationRequestDto dto){
         //악기 검색
-        Instrument inst = instrumentRepository.findById(dto.getInstrumentDto().getIid()).orElseThrow(EntityNotFoundException::new);
+        Instrument inst = instrumentRepository.findById(dto.getIid()).orElseThrow(EntityNotFoundException::new);
         if(inst.getInstUsable() == false){
             throw new EntityExistsException("예약 불가 장비");
         }
@@ -162,7 +162,7 @@ public class ReservationService {
     @Transactional
     public ReservationResponseDto updateReservation(String email, ReservationRequestDto dto){
         User user = userRepository.findByUserEmail(email).orElseThrow(EntityNotFoundException::new );
-        Team team = teamRepository.findById(dto.getTeamResponseDto().getTid()).orElseThrow(EntityNotFoundException::new );
+        Team team = teamRepository.findById(dto.getTid()).orElseThrow(EntityNotFoundException::new );
         Reservation res = reservationRepository.findById(dto.getRid()).orElseThrow(EntityNotFoundException::new);
 
         if (!user.getUid().equals(res.getUser().getUid()) &&
@@ -178,7 +178,7 @@ public class ReservationService {
             dto.setReservationStatus(res.getReservationStatus());
         }
 
-        if(dto.getTeamResponseDto() == null){
+        if(dto.getTid() == null){
             team = null;
         }
 

@@ -17,11 +17,11 @@ public class ReservationRequestDto {
     private LocalDateTime resStartTime;
 
 
-    private UserResponseDto userResponseDto;
+    private Long uid;
 
-    private TeamResponseDto teamResponseDto;
+    private Long tid;
 
-    private InstrumentDto instrumentDto;
+    private Long iid;
 
     private ReservationStatus reservationStatus;
 
@@ -29,16 +29,16 @@ public class ReservationRequestDto {
     public ReservationRequestDto( Long rid,
                                   String resName,
                                   LocalDateTime resStartTime,
-                                  UserResponseDto userResponseDto,
-                                  TeamResponseDto teamResponseDto,
-                                  InstrumentDto instrumentDto,
+                                  Long uid,
+                                  Long tid,
+                                  Long iid,
                                   ReservationStatus reservationStatus){
         this.rid = rid;
         this.resName = resName;
         this.resStartTime = resStartTime;
-        this.userResponseDto = userResponseDto;
-        this.teamResponseDto = teamResponseDto;
-        this.instrumentDto = instrumentDto;
+        this.uid = uid;
+        this.tid = tid;
+        this.iid = iid;
         this.reservationStatus = reservationStatus;
     }
 }
