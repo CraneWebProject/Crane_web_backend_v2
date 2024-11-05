@@ -251,10 +251,9 @@ public class ReservationService {
 
     //예약 취소
     //신청자 혹은 관리자, 매니저만 취소 가능
-    @Transactional
-    public ReservationResponseDto cancelReservation(String userEmail, ReservationRequestDto dto){
+    public ReservationResponseDto cancelReservation(String userEmail, Long rid){
         User user = userRepository.findByUserEmail(userEmail).orElseThrow(EntityNotFoundException::new);
-        Reservation res = reservationRepository.findById(dto.getRid()).orElseThrow(EntityNotFoundException::new);
+        Reservation res = reservationRepository.findById(rid).orElseThrow(EntityNotFoundException::new);
 
         if (!user.getUid().equals(res.getUser().getUid()) &&
                 !(user.getUserRole() == UserRole.ROLE_ADMIN || user.getUserRole() == UserRole.ROLE_MANAGER)) {
@@ -264,7 +263,6 @@ public class ReservationService {
         //합주 예약 취소인경우, 장비 예약 허용으로 변경
         List<Reservation> resList =  reservationRepository.findByResStartTime(res.getResStartTime());
         if(res.getInstrument().getInstName().equals("합주")){
-
             for(Reservation r : resList){
                 r.updateReservation(
                         r.getResName(),
@@ -273,15 +271,16 @@ public class ReservationService {
                         null,
                         null);
                 reservationRepository.save(r);
+
             }
         }else{
             //장비 예약 취소인 경우, 합주 예약 가능하도록 변경
             for(Reservation r : resList){
                 if(r.getInstrument().getInstName().equals("합주")){
                     r.updateReservation(
-                            r.getResName(),
+                            null,
                             true,
-                            r.getReservationStatus(),
+                            null,
                             null,
                             null
                     );

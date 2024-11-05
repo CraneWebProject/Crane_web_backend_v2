@@ -38,7 +38,7 @@ public class Reservation {
     private User user;
 
     @JoinColumn(name = "tid")
-    @ManyToOne(fetch =FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
 
@@ -58,7 +58,6 @@ public class Reservation {
         this.resName = null;
         this.reservationStatus = null;
         this.resPossible = true;
-        this.instrument = null;
         this.user = null;
         this.team = null;
     }

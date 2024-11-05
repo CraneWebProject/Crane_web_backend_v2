@@ -61,12 +61,10 @@ public class ReservationController {
     }
 
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
-    @PutMapping("/{resId}/cancel")
-    public ResponseEntity<ReservationResponseDto> cancelReservation(@PathVariable("resId") Long resId,
-                                                                    @RequestBody ReservationRequestDto dto){
+    @GetMapping("/{resId}/cancel")
+    public ResponseEntity<ReservationResponseDto> cancelReservation(@PathVariable("resId") Long resId){
         String userEmail = securityUtil.getCurrentLoggedInUserEmail();
-        dto.setRid(resId);
-        return ResponseEntity.ok(reservationService.cancelReservation(userEmail, dto));
+        return ResponseEntity.ok(reservationService.cancelReservation(userEmail, resId));
     }
 
 
