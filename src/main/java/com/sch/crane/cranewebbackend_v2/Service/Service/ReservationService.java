@@ -234,6 +234,14 @@ public class ReservationService {
             }
         }
 
+        //예약 시간이 지난 경우 예약 불가
+        //예약시간이 30분 이내인 경우 예약 불가
+        if(res.getResStartTime().minusMinutes(30).isBefore(LocalDateTime.now())){
+            throw new IllegalStateException("예약이 불가능한 시간대입니다.");
+        }
+
+
+
         res.updateReservation(
                 res.getResName(),
                 false,
@@ -251,6 +259,7 @@ public class ReservationService {
 
     //예약 취소
     //신청자 혹은 관리자, 매니저만 취소 가능
+    //지난 예약에 대한 취소 불가
     public ReservationResponseDto cancelReservation(String userEmail, Long rid){
         User user = userRepository.findByUserEmail(userEmail).orElseThrow(EntityNotFoundException::new);
         Reservation res = reservationRepository.findById(rid).orElseThrow(EntityNotFoundException::new);
@@ -258,6 +267,10 @@ public class ReservationService {
         if (!user.getUid().equals(res.getUser().getUid()) &&
                 !(user.getUserRole() == UserRole.ROLE_ADMIN || user.getUserRole() == UserRole.ROLE_MANAGER)) {
             throw new BadCredentialsException("권한이 없는 사용자");
+        }
+
+        if(res.getResStartTime().isBefore(LocalDateTime.now())){
+            throw new IllegalStateException("지난 예약은 취소할 수 없음");
         }
 
         //합주 예약 취소인경우, 장비 예약 허용으로 변경
