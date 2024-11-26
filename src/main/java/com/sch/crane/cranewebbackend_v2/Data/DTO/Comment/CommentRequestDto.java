@@ -7,15 +7,12 @@ import lombok.Data;
 @Data
 public class CommentRequestDto {
 
-    private Long cid;
-
     private String commentContents;
 
     private Board board;
 
     @Builder
-    public CommentRequestDto(Long cid, String commentContents){
-        this.cid = cid;
+    public CommentRequestDto(String commentContents){
 
         this.commentContents = commentContents;
 

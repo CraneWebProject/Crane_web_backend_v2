@@ -13,23 +13,29 @@ public class Instrument {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Iid;
+    private Long iid;
 
     @Column(nullable = false)
     private String instName;
+
+    @Column(nullable = true)
+    private String instBirth;
 
     @Column(nullable = false)
     private Boolean instUsable;
 
 
 
-    public void updateInst(Boolean instUsable){
+    public void updateInst(String instName, String instBirth, Boolean instUsable){
+        this.instName = instName;
+        this.instBirth = instBirth;
         this.instUsable = instUsable;
     }
 
     @Builder
-    public Instrument (String instName, Boolean instUsable){
+    public Instrument (String instName, String instBirth ,Boolean instUsable){
         this.instName = instName;
+        this.instBirth = instBirth;
         this.instUsable = instUsable;
     }
 

@@ -20,11 +20,11 @@ public class TeamMatch implements Serializable {
 
     private TeamMatchRole teamMatchRole;
 
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "uid")
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @JoinColumn(name = "teamId")
+    @JoinColumn(name = "tid")
     @ManyToOne(fetch = FetchType.LAZY)
     private Team team;
 
@@ -35,5 +35,9 @@ public class TeamMatch implements Serializable {
         this.user = user;
 
         this.team = team;
+    }
+
+    public void updateTeamMatch(TeamMatchRole teamMatchRole){
+        this.teamMatchRole = teamMatchRole;
     }
 }

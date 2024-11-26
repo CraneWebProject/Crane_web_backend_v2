@@ -28,6 +28,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(user -> createUser(userEmail, user))
                 .orElseThrow(() -> new UsernameNotFoundException(userEmail + " DB에 존재하지 않는 유저"));
     }
+//    @Override
+//    @Transactional(readOnly = true)
+//    public UserDetails loadUserByUsername(final String userEmail) throws UserNameNotFoundException {
+//        return userRepository.findWithAuthoritiesByUserEmail(userEmail)
+//                .map(UserDetailsImpl::from)
+//                .orElseThrow(() -> new UsernameNotFoundException(userEmail + " DB에 존재하지 않는 유저"));
+//    }
 
     private User createUser(String userEmail, com.sch.crane.cranewebbackend_v2.Domain.Entity.User user){
 

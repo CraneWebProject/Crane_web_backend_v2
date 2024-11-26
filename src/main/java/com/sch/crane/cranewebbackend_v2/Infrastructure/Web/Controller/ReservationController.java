@@ -2,13 +2,17 @@ package com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller;
 
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Reservation.ReservationRequestDto;
 import com.sch.crane.cranewebbackend_v2.Data.DTO.Reservation.ReservationResponseDto;
+import com.sch.crane.cranewebbackend_v2.Domain.Entity.User;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Response.GeneralResponse;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.JWT.UserDetailsImpl;
+import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Auth.Security.SecurityUtil;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.ResponseMessage;
 import com.sch.crane.cranewebbackend_v2.Infrastructure.Web.Controller.Status.StatusCode;
 import com.sch.crane.cranewebbackend_v2.Service.Service.ReservationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.Response;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,145 +26,67 @@ import java.util.List;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/reservations")
+@RequestMapping("/api/reservation")
 public class ReservationController {
+
     private final ReservationService reservationService;
+    private final SecurityUtil securityUtil;
 
-
-    //예약 생성 요청 처리
-    @PostMapping("/reservation")
-    public ResponseEntity<?> CreateReservation(@RequestBody ReservationRequestDto dto){
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        String userEmail = userDetails.getUserEmail();
-
-        ReservationResponseDto reservationResponseDto =  reservationService.createReservation(userEmail, dto);
-
-        GeneralResponse response = GeneralResponse.builder()
-                .code(StatusCode.OK)
-                .message(ResponseMessage.CREATE_OK)
-                .data(reservationResponseDto)
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    @PostMapping("/")
+    public ResponseEntity<ReservationResponseDto> createReservation(@RequestBody ReservationRequestDto dto){
+        return ResponseEntity.ok(reservationService.createReservation(dto));
     }
 
-    @GetMapping("/reservation/{ReservationId}")
-    public ResponseEntity<?> getReservationByReservationId(@PathVariable Long ReservationId){
-        ReservationResponseDto responseDto = reservationService.readReservation(ReservationId);
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
+    @GetMapping("/{resId}")
+    public ResponseEntity<ReservationResponseDto> getReservation(@PathVariable("resId") Long resId){
+        return ResponseEntity.ok(reservationService.getReservation(resId));
+    }
 
-        GeneralResponse response = GeneralResponse.builder()
-                .code(StatusCode.OK)
-                .message(ResponseMessage.CHECK_OK)
-                .data(responseDto)
-                .build();
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
+    @PutMapping("/{resId}")
+    public ResponseEntity<ReservationResponseDto> updateReservation(@PathVariable("resId") Long resId,
+                                                                    @RequestBody ReservationRequestDto dto){
+        String userEmail = securityUtil.getCurrentLoggedInUserEmail();
+        dto.setRid(resId);
+        return ResponseEntity.ok(reservationService.updateReservation(userEmail, dto));
+    }
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
+    @GetMapping("/makeres/{resId}")
+    public ResponseEntity<ReservationResponseDto> makeAReservation(@PathVariable("resId") Long resId){
+        String userEmail = securityUtil.getCurrentLoggedInUserEmail();
+        return ResponseEntity.ok(reservationService.makeAReservation( userEmail, resId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
+    @GetMapping("/{resId}/cancel")
+    public ResponseEntity<ReservationResponseDto> cancelReservation(@PathVariable("resId") Long resId){
+        String userEmail = securityUtil.getCurrentLoggedInUserEmail();
+        return ResponseEntity.ok(reservationService.cancelReservation(userEmail, resId));
     }
 
 
-    @GetMapping("/user")
-    public ResponseEntity<?> readReservationByUserEmail(){
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        String userEmail = userDetails.getUserEmail();
-
-        List<ReservationResponseDto> responseDto = reservationService.getReservationWithUserEmail(userEmail);
-
-        GeneralResponse response = GeneralResponse.builder()
-                .code(StatusCode.OK)
-                .message(ResponseMessage.CHECK_OK)
-                .data(responseDto)
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
+    @GetMapping("/date/{date}")
+    public ResponseEntity<List<ReservationResponseDto>> getResByDate(@PathVariable("date")
+                                                                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+                                                                     LocalDate date,
+                                                                     @RequestParam (value = "iid") Long iid){
+        return ResponseEntity.ok(reservationService.findResByDayAndInst(date, iid));
     }
 
-    @GetMapping("/weekly")
-    public ResponseEntity<?> readReservationListByWeek(LocalDate date){
-        List<ReservationResponseDto> reservationResponseDtoList = reservationService.getReservationOfWeekWithDate(date);
-
-        GeneralResponse response = GeneralResponse.builder()
-                .code(StatusCode.OK)
-                .message(ResponseMessage.CHECK_OK)
-                .data(reservationResponseDtoList)
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @ExceptionHandler({Exception.class})
+    public ResponseEntity<String> handleException(Exception e) {
+        return new ResponseEntity<>("Invalid date format. Please use 'yyyy-MM-dd'.", HttpStatus.BAD_REQUEST);
     }
 
-    //예약정보 수정
-    @PatchMapping("/updateReservation")
-    public ResponseEntity<?> updateReservation(ReservationRequestDto dto){
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        String userEmail = userDetails.getUserEmail();
-
-        GeneralResponse response;
-
-        try{
-            ReservationResponseDto responseDto =  reservationService.updateReservation(userEmail, dto);
-
-            response = GeneralResponse.builder()
-                    .code(StatusCode.OK)
-                    .message(ResponseMessage.UPDATE_OK)
-                    .data(responseDto)
-                    .build();
-
-            return new ResponseEntity<>(responseDto, HttpStatus.OK);
-
-        }catch (BadCredentialsException e){
-            response = GeneralResponse.builder()
-                    .code(StatusCode.BAD_REQUEST)
-                    .message(ResponseMessage.UPDATE_FAILED)
-                    .build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
+    @GetMapping("/user/{uid}")
+    public ResponseEntity<List<ReservationResponseDto>> getResByUserId(@PathVariable("uid") Long uid){
+        return ResponseEntity.ok(reservationService.findResByUser(uid));
     }
 
-    @DeleteMapping("/{reservationId}")
-    public ResponseEntity<?> deleteReservation(@PathVariable Long reservationId){
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-        String userEmail = userDetails.getUserEmail();
-
-        GeneralResponse response;
-
-
-        try{
-            boolean result = reservationService.deleteReservation(userEmail, reservationId);
-
-            if(result){
-                response = GeneralResponse.builder()
-                        .code(StatusCode.OK)
-                        .message(ResponseMessage.UPDATE_OK)
-                        .build();
-
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }
-            return null;
-        }catch(BadCredentialsException e){
-            response = GeneralResponse.builder()
-                    .code(StatusCode.BAD_REQUEST)
-                    .message(ResponseMessage.UPDATE_FAILED)
-                    .build();
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-    }
-
-//    @PreAuthorize()
-    @PatchMapping("/status/{reservationId}")
-    public ResponseEntity<?> updateReservationStatusByManager(@PathVariable Long reservationId, ReservationRequestDto reservationRequestDto){
-        ReservationResponseDto dto = reservationService.ChangeStatusByManager(reservationId,reservationRequestDto.getReservationStatus());
-
-        GeneralResponse response = GeneralResponse.builder()
-                .code(StatusCode.OK)
-                .message(ResponseMessage.UPDATE_OK)
-                .data(dto)
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 
 }
