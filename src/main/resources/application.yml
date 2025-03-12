@@ -6,7 +6,7 @@ spring:
     include: jwt
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${MYSQL_URL}
+    url: ${MYSQL_URL_V2}
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
   sql:
