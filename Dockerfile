@@ -18,7 +18,7 @@ ENV MYSQL_USER=${MYSQL_USER}
 ENV REDIS_HOST=${REDIS_HOST}
 ENV REDIS_PORT=${REDIS_PORT}
 
-COPY build/libs/crane-backend-v2-0.0.1-SNAPSHOT.jar app.jar
+COPY build/libs/CraneWebBackend_v2-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8900
 
