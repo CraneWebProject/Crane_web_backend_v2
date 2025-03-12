@@ -53,9 +53,8 @@ pipeline {
             steps {
                 script {
                     def changes = sh(script: "git diff --name-only HEAD^", returnStdout: true).trim()
-                    def serviceChanged = changes.split('\n').any { it.startsWith('CraneWebBackend_v2/') }
 
-                    if (!serviceChanged) {
+                    if (!changes) {
                         currentBuild.result = 'NOT_BUILT'
                         error('No changes in CraneWebBackend_v2 directory, skipping build')
                     }
