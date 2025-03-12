@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SERVICE_NAME = 'craneWebBackend_v2'
+        SERVICE_NAME = 'cranebackend_v2'
         IMAGE_TAG = "cranebackend_v2:latest"
         LOCAL_PORT = "8900"
         // ✅ 환경 변수 설정
@@ -56,9 +56,9 @@ pipeline {
 
                     if (!changes) {
                         currentBuild.result = 'NOT_BUILT'
-                        error('No changes in CraneWebBackend_v2 directory, skipping build')
+                        error('No changes in cranebackend_v2 directory, skipping build')
                     }
-                    echo "✅ CraneWebBackend_v2 변경 사항 감지됨. 빌드를 진행합니다."
+                    echo "✅ cranebackend_v2 변경 사항 감지됨. 빌드를 진행합니다."
                 }
             }
         }
@@ -130,7 +130,7 @@ pipeline {
                         --build-arg MYSQL_URL_V2=$MYSQL_URL_V2 \
                         --build-arg MYSQL_USER=$MYSQL_USER \
                         --build-arg MYSQL_PASSWORD=$MYSQL_PASSWORD \
-                        user-service/
+                        cranebackend_v2/
 
                     # 기존 컨테이너 종료 후 삭제
                     docker stop $SERVICE_NAME || true
