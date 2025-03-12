@@ -88,12 +88,10 @@ pipeline {
             steps {
                 script{
                     long startTime = new Date().getTime()
-                    dir('CraneWebBackend_v2') {
-                        sh '''
-                            chmod +x gradlew
-                            ./gradlew clean build -x test
-                        '''
-                    }
+                    sh '''
+                        chmod +x gradlew
+                        ./gradlew clean build -x test
+                    '''
                     long endTime = new Date().getTime()
                     SLACK_DURATION_TIME_MESSAGE = getStageDurationMessage(startTime, endTime)
                     SLACK_MESSAGE_BUILDER += ":white_check_mark: Build 성공! (${SLACK_DURATION_TIME_MESSAGE}) \n"
