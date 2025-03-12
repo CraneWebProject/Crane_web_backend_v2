@@ -130,7 +130,7 @@ pipeline {
                         --build-arg MYSQL_URL_V2=$MYSQL_URL_V2 \
                         --build-arg MYSQL_USER=$MYSQL_USER \
                         --build-arg MYSQL_PASSWORD=$MYSQL_PASSWORD \
-                        cranebackend_v2/
+                        .
 
                     # 기존 컨테이너 종료 후 삭제
                     docker stop $SERVICE_NAME || true
