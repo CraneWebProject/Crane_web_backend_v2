@@ -39,9 +39,9 @@ public class UserController {
     private final UserService userService;
     private final TokenProvider tokenProvider;
     private final JwtUtil jwtUtil;
-//    private final RedisUtil redisUtil;
-    private final Long expireTimeMs = 300000l;
-    private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
+////    private final RedisUtil redisUtil;
+//    private final Long expireTimeMs = 300000l;
+//    private final Long RefreshExpireTimeMs = 1000 * 60 * 60 * 60L;
 
 
     //회원가입
