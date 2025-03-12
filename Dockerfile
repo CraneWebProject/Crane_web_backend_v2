@@ -1,6 +1,25 @@
 #dockerfile
 FROM openjdk:17
-CMD ["./mvnw", "clean", "package"]
-ARG JAR_FILE=build/libs/*.jar
-COPY ${JAR_FILE} craneWeb.jar
-ENTRYPOINT ["java","-jar","/craneWeb.jar"]
+WORKDIR /app
+
+#환경변수 정의
+ARG JWT_SECRET
+ARG MYSQL_PASSWORD
+ARG MYSQL_URL_V2
+ARG MYSQL_USER
+ARG REDIS_HOST
+ARG REDIS_PORT
+
+# 환경변수 설정
+ENV JWT_SECRET=${JWT_SECRET}
+ENV MYSQL_PASSWORD=${MYSQL_PASSWORD}
+ENV MYSQL_URL_V2=${MYSQL_URL_V2}
+ENV MYSQL_USER=${MYSQL_USER}
+ENV REDIS_HOST=${REDIS_HOST}
+ENV REDIS_PORT=${REDIS_PORT}
+
+COPY build/libs/crane-backend-v2-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 8900
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
