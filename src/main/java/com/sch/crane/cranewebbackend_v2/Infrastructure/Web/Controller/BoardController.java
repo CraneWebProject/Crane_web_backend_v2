@@ -28,11 +28,6 @@ import java.util.List;
 public class BoardController {
     private final BoardService boardService;
 
-//    @GetMapping("/test")
-//    public void testboard(){
-//        boardService.BoardTest();
-//    }
-
     @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('MEMBER') or hasRole('GRADUATED')")
     @PostMapping("/createBoard")
     public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardRequestDto) {
