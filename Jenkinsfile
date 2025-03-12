@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         SERVICE_NAME = 'craneWebBackend_v2'
-        IMAGE_TAG = "craneWebBackend_v2:latest"
+        IMAGE_TAG = "cranebackend_v2:latest"
         LOCAL_PORT = "8900"
         // ✅ 환경 변수 설정
         JWT_SECRET = credentials('JWT_SECRET')
