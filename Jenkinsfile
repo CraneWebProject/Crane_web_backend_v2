@@ -67,7 +67,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/CraneWebProject/Crane_Web_Frontend_v2'
+                    url: 'https://github.com/CraneWebProject/Crane_web_backend_v2'
 
                 script {
                     def gitCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
