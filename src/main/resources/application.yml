@@ -1,0 +1,40 @@
+spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  profiles:
+    include: jwt
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${MYSQL_URL}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+  sql:
+    init:
+      mode: always
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+#        ddl-auto 이후 sql script 실행
+    defer-datasource-initialization: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+#      password: input password
+  jwt:
+    header: Authorization
+    secret: ${JWT_SECRET}
+    access-expiration-time: 86400000 #60분
+    refresh-expiration-time: 604800000 #1주(7일)
+  #spring boot batch + scheduler
+  batch:
+    jdbc:
+      initialize-schema: always  # batch 스키마 자동 생성
+    job:
+      enabled: false # 시작과 동시에 실행되는건 방지
+server:
+  port: 8085
