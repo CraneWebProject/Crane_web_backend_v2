@@ -37,4 +37,4 @@ spring:
     job:
       enabled: false # 시작과 동시에 실행되는건 방지
 server:
-  port: 8085
+  port: 8900
